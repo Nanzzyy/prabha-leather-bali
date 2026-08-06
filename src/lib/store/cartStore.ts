@@ -7,22 +7,28 @@ export interface CartItem {
   product: Product;
   variant: ProductVariant;
   quantity: number;
+  customEmboss?: string;
 }
 
 interface CartState {
   items: CartItem[];
-  addItem: (product: Product, variant: ProductVariant, quantity?: number) => void;
+  isOpen: boolean;
+  addItem: (product: Product, variant: ProductVariant, quantity?: number, customEmboss?: string) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
+  openCart: () => void;
+  closeCart: () => void;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      addItem: (product, variant, quantity = 1) => {
-        const cartItemId = `${product.id}-${variant.sku}`;
+      isOpen: false,
+      addItem: (product, variant, quantity = 1, customEmboss = '') => {
+        const normalizedEmboss = customEmboss.trim();
+        const cartItemId = `${product.id}-${variant.sku}-${normalizedEmboss.toLowerCase() || 'none'}`;
         const currentItems = get().items;
         const existingItem = currentItems.find((item) => item.id === cartItemId);
 
@@ -36,7 +42,7 @@ export const useCartStore = create<CartState>()(
           });
         } else {
           set({
-            items: [...currentItems, { id: cartItemId, product, variant, quantity }],
+            items: [...currentItems, { id: cartItemId, product, variant, quantity, customEmboss: normalizedEmboss || undefined }],
           });
         }
       },
@@ -46,11 +52,13 @@ export const useCartStore = create<CartState>()(
         })),
       updateQuantity: (id, quantity) =>
         set((state) => ({
-          items: state.items.map((item) =>
-            item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
-          ),
+          items: quantity <= 0
+            ? state.items.filter((item) => item.id !== id)
+            : state.items.map((item) => item.id === id ? { ...item, quantity } : item),
         })),
       clearCart: () => set({ items: [] }),
+      openCart: () => set({ isOpen: true }),
+      closeCart: () => set({ isOpen: false }),
     }),
     {
       name: 'leather-cart-storage', // key in localStorage

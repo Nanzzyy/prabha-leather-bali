@@ -1,12 +1,18 @@
 import type { NextConfig } from "next";
 
-const isExport = process.env.OUTPUT_MODE === 'export';
-
 const nextConfig: NextConfig = {
-  ...(isExport && { output: 'export' }),
+  output: 'export',
+  trailingSlash: true,
+  experimental: {
+    useTypeScriptCli: false,
+  },
   images: {
-    unoptimized: true, // Requires unoptimized for static export unless using custom loader
-  }
+    unoptimized: true,
+    remotePatterns: [
+      { protocol: 'https', hostname: '*.supabase.co' },
+      { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
+    ],
+  },
 };
 
 export default nextConfig;

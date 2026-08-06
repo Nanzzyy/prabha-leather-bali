@@ -1,107 +1,119 @@
 import { Pool } from 'pg';
-import { IProductRepository, Product, ProductVariant } from '../types/repository';
+import { IProductRepository, Product } from '../types/repository';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      max: 5,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 10_000,
+      ssl: process.env.DATABASE_SSL === 'false' ? false : { rejectUnauthorized: false },
+    })
+  : null;
 
 export class PostgresAdapter implements IProductRepository {
   async getAllProducts(): Promise<Product[]> {
-    const client = await pool.connect();
+    if (!pool) return [];
+
+    let client;
     try {
+      client = await pool.connect();
       const result = await client.query(`
-        SELECT p.*, 
+        SELECT p.id, p.title, p.slug, p.description, p.leather_type, p.base_price_usd,
+          p.is_featured, c.slug AS category,
           COALESCE(
-            json_agg(
-              json_build_object(
-                'sku', v.sku,
-                'color', v.color,
-                'size', v.size,
-                'priceAdjustment', v.price_adjustment,
-                'stockStatus', v.stock_status
-              )
-            ) FILTER (WHERE v.sku IS NOT NULL), '[]'
-          ) as variants
+            (SELECT json_agg(pi.image_url ORDER BY pi.display_order)
+             FROM product_images pi WHERE pi.product_id = p.id), '[]'
+          ) AS images,
+          COALESCE(
+            (SELECT json_agg(jsonb_build_object(
+              'sku', v.sku, 'color', v.color_name, 'colorHex', v.color_hex,
+              'size', v.size_eu, 'priceAdjustment', 0, 'stockStatus', v.stock_status
+            ) ORDER BY v.sku) FROM product_variants v WHERE v.product_id = p.id), '[]'
+          ) AS variants
         FROM products p
-        LEFT JOIN product_variants v ON p.id = v.product_id
-        GROUP BY p.id
+        LEFT JOIN categories c ON c.id = p.category_id
+        ORDER BY p.is_featured DESC, p.created_at DESC
       `);
 
-      return result.rows.map(row => ({
-        id: row.id,
-        name: row.name,
-        slug: row.slug,
-        category: row.category,
-        basePrice: parseFloat(row.base_price),
-        description: row.description,
-        images: row.images || [],
-        variants: row.variants,
-        isFeatured: row.is_featured
-      }));
+      return result.rows.map(mapProductRow);
     } catch (error) {
       console.error('Error fetching products from Postgres:', error);
       return []; // fallback or throw
     } finally {
-      client.release();
+      client?.release();
     }
   }
 
   async getProductBySlug(slug: string): Promise<Product | null> {
-    const client = await pool.connect();
+    if (!pool) return null;
+
+    let client;
     try {
+      client = await pool.connect();
       const result = await client.query(`
-        SELECT p.*, 
+        SELECT p.id, p.title, p.slug, p.description, p.leather_type, p.base_price_usd,
+          p.is_featured, c.slug AS category,
           COALESCE(
-            json_agg(
-              json_build_object(
-                'sku', v.sku,
-                'color', v.color,
-                'size', v.size,
-                'priceAdjustment', v.price_adjustment,
-                'stockStatus', v.stock_status
-              )
-            ) FILTER (WHERE v.sku IS NOT NULL), '[]'
-          ) as variants
+            (SELECT json_agg(pi.image_url ORDER BY pi.display_order)
+             FROM product_images pi WHERE pi.product_id = p.id), '[]'
+          ) AS images,
+          COALESCE(
+            (SELECT json_agg(jsonb_build_object(
+              'sku', v.sku, 'color', v.color_name, 'colorHex', v.color_hex,
+              'size', v.size_eu, 'priceAdjustment', 0, 'stockStatus', v.stock_status
+            ) ORDER BY v.sku) FROM product_variants v WHERE v.product_id = p.id), '[]'
+          ) AS variants
         FROM products p
-        LEFT JOIN product_variants v ON p.id = v.product_id
+        LEFT JOIN categories c ON c.id = p.category_id
         WHERE p.slug = $1
-        GROUP BY p.id
       `, [slug]);
 
       if (result.rows.length === 0) return null;
-
-      const row = result.rows[0];
-      return {
-        id: row.id,
-        name: row.name,
-        slug: row.slug,
-        category: row.category,
-        basePrice: parseFloat(row.base_price),
-        description: row.description,
-        images: row.images || [],
-        variants: row.variants,
-        isFeatured: row.is_featured
-      };
+      return mapProductRow(result.rows[0]);
     } catch (error) {
       console.error('Error fetching product by slug from Postgres:', error);
       return null;
     } finally {
-      client.release();
+      client?.release();
     }
   }
 
   async getCategories(): Promise<string[]> {
-    const client = await pool.connect();
+    if (!pool) return [];
+
+    let client;
     try {
+      client = await pool.connect();
       const result = await client.query(`
-        SELECT DISTINCT category FROM products WHERE category IS NOT NULL
+        SELECT slug FROM categories ORDER BY name
       `);
-      return result.rows.map(row => row.category);
+      return result.rows.map(row => row.slug);
     } catch (error) {
       console.error('Error fetching categories from Postgres:', error);
       return [];
     } finally {
-      client.release();
+      client?.release();
     }
   }
+}
+
+function mapProductRow(row: Record<string, unknown>): Product {
+  const category = String(row.category || 'accessories');
+  const safeCategory = ['boots', 'bags', 'wallets', 'accessories', 'jackets'].includes(category)
+    ? category as Product['category']
+    : 'accessories';
+
+  return {
+    id: String(row.id),
+    name: String(row.title || 'Untitled product'),
+    slug: String(row.slug),
+    category: safeCategory,
+    leatherType: String(row.leather_type || 'Full-Grain Leather'),
+    basePrice: Number(row.base_price_usd || 0),
+    description: String(row.description || ''),
+    images: Array.isArray(row.images) ? row.images as string[] : [],
+    variants: Array.isArray(row.variants) ? row.variants as Product['variants'] : [],
+    isFeatured: Boolean(row.is_featured),
+  };
 }

@@ -1,41 +1,51 @@
-import { Product } from '@/lib/types/repository';
+'use client';
+
 import Image from 'next/image';
+import { Product } from '@/lib/types/repository';
+import { useCartStore } from '@/lib/store/cartStore';
+import { useCurrency } from '@/lib/currency/CurrencyContext';
+import { useLang } from '@/lib/i18n/LangContext';
+import { flyToPouch } from '@/lib/utils/flyToCart';
+import Icon from './Icon';
+import LocaleLink from './LocaleLink';
 
 interface Props {
   product: Product;
-  onClick: (product: Product) => void;
+  compact?: boolean;
+  showOrderAction?: boolean;
 }
 
-export default function ProductCard({ product, onClick }: Props) {
-  // Use first variant price if available, else basePrice
-  const minPrice = product.basePrice;
+export default function ProductCard({ product, compact = false, showOrderAction = true }: Props) {
+  const addItem = useCartStore((state) => state.addItem);
+  const { formatPrice } = useCurrency();
+  const { t } = useLang();
+  const firstVariant = product.variants[0];
+
+  const handleOrder = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!firstVariant) return;
+    addItem(product, firstVariant);
+    flyToPouch(event.currentTarget, product.images[0]);
+  };
 
   return (
-    <div 
-      className="border rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow bg-white"
-      onClick={() => onClick(product)}
-    >
-      <div className="relative w-full h-48 bg-gray-200">
-        {product.images[0] ? (
-          <Image 
-            src={product.images[0]} 
-            alt={product.name} 
-            fill 
-            className="object-cover"
-          />
-        ) : (
-          <div className="flex items-center justify-center w-full h-full text-gray-400">
-            No Image
-          </div>
-        )}
+    <article className={`product-card ${compact ? 'product-card--compact' : ''}`}>
+      <LocaleLink href={`/catalog/${product.slug}/`} className="product-card__media" ariaLabel={`View ${product.name}`}>
+        {product.images[0]
+          ? <Image src={product.images[0]} alt={product.name} fill sizes="(max-width: 768px) 100vw, 25vw" className="product-card__image product-card__image--primary" />
+          : <span className="product-card__image product-card__image--placeholder" aria-hidden>{product.name.charAt(0)}</span>}
+        {product.images[1] && <Image src={product.images[1]} alt="" fill sizes="(max-width: 768px) 100vw, 25vw" className="product-card__image product-card__image--swap" />}
+        {product.isFeatured && <span className="product-card__badge">Featured</span>}
+        <span className="product-card__view">{t('cta.viewPiece')} <Icon>arrow_outward</Icon></span>
+      </LocaleLink>
+      <div className="product-card__body">
+        <span className="eyebrow">{product.category}</span>
+        <LocaleLink href={`/catalog/${product.slug}/`}><h3>{product.name}</h3></LocaleLink>
+        <p>{product.leatherType}</p>
+        <div className="product-card__footer">
+          <span>{formatPrice(product.basePrice)}</span>
+          {showOrderAction && <button type="button" onClick={handleOrder}><Icon>shopping_bag</Icon> {t('cta.addToPouch')}</button>}
+        </div>
       </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-lg mb-1 truncate text-black">{product.name}</h3>
-        <p className="text-sm text-gray-500 mb-2 capitalize">{product.category}</p>
-        <p className="font-bold text-black">
-          Rp {minPrice.toLocaleString('id-ID')}
-        </p>
-      </div>
-    </div>
+    </article>
   );
 }
