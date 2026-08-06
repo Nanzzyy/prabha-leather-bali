@@ -3,7 +3,7 @@ import { mapLiveProductRow } from '@/lib/catalog/live';
 import { normalizeCollectionSubcategory, type CollectionSubcategory } from '@/lib/content/defaults';
 import type { Product } from '@/lib/types/repository';
 
-const PRODUCT_SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_featured, categories(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, stock_status)';
+const PRODUCT_SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_featured, categories(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
 
 export type CollectionProductGroup = {
   categoryId: string;

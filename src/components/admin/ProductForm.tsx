@@ -12,7 +12,7 @@ import {
 } from '@/lib/admin/queries';
 
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-const emptyVariant = (): AdminVariant => ({ sku: '', color_name: '', color_hex: '#8B4513', size_eu: '', stock_status: 'available' });
+const emptyVariant = (): AdminVariant => ({ sku: '', color_name: '', color_hex: '#8B4513', size_eu: '', image_url: '', stock_status: 'available' });
 
 export default function ProductForm({ productId }: { productId?: string }) {
   const router = useRouter();
@@ -194,6 +194,15 @@ export default function ProductForm({ productId }: { productId?: string }) {
               <div>
                 <span className="admin-variant__label">Size (EU)</span>
                 <input type="text" value={v.size_eu || ''} onChange={(e) => setVariant(i, { size_eu: e.target.value })} placeholder="42" />
+              </div>
+              <div className="admin-variant__image">
+                <span className="admin-variant__label">Variant image (optional)</span>
+                <Select
+                  value={v.image_url || ''}
+                  onChange={(val) => setVariant(i, { image_url: val || '' })}
+                  options={[{ value: '', label: '— Use default gallery —' }, ...images.map((img, idx) => ({ value: img.image_url, label: `Image ${idx + 1}` }))]}
+                />
+                <span className="admin-field__hint">Shown on the product page when this color is picked. Just points to a gallery image.</span>
               </div>
               <div className="admin-variant__stock">
                 <span className="admin-variant__label">Stock</span>

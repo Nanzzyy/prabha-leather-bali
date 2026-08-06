@@ -36,7 +36,22 @@ export default function ProductDetailClient({ product: initialProduct, related }
   const sizes = useMemo(() => Array.from(new Set(product.variants.map((variant) => variant.size).filter(Boolean))), [product.variants]);
   const displayedPrice = product.basePrice + (selectedVariant?.priceAdjustment || 0);
 
-  const chooseColor = (color: string) => setSelectedVariant(product.variants.find((variant) => variant.color === color) || selectedVariant);
+  const chooseColor = (color: string) => {
+    const next = product.variants.find((variant) => variant.color === color) || selectedVariant;
+    setSelectedVariant(next);
+    // If the variant points at a gallery image, aim the main gallery at it
+    // (pure redirect — no layout/structure change). Otherwise leave the gallery.
+    if (next?.image) {
+      const idx = product.images.indexOf(next.image);
+      if (idx >= 0) setActiveImage(idx);
+    }
+  };
+  // When the live product arrives (or slug changes), if the default variant has an
+  // image, start the gallery there.
+  useEffect(() => {
+    const first = product.variants[0];
+    if (first?.image) { const idx = product.images.indexOf(first.image); if (idx >= 0) setActiveImage(idx); }
+  }, [product]);
   const chooseSize = (size: string) => setSelectedVariant(product.variants.find((variant) => variant.color === selectedVariant.color && variant.size === size) || product.variants.find((variant) => variant.size === size) || selectedVariant);
   const addToPouch = (event: React.MouseEvent<HTMLButtonElement>) => { if (!selectedVariant || selectedVariant.stockStatus === 'out_of_stock') return; addItem(product, selectedVariant, quantity, emboss); flyToPouch(event.currentTarget, product.images[activeImage] || product.images[0]); };
 
