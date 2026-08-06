@@ -3,7 +3,7 @@ import { mapLiveProductRow } from '@/lib/catalog/live';
 import { normalizeCollectionSubcategory, type CollectionSubcategory } from '@/lib/content/defaults';
 import type { Product } from '@/lib/types/repository';
 
-const PRODUCT_SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_featured, categories(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
+const PRODUCT_SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
 
 export type CollectionProductGroup = {
   categoryId: string;
@@ -42,7 +42,7 @@ export async function fetchLiveCollectionProductGroups(): Promise<CollectionProd
   if (groupHolder.inflight) return groupHolder.inflight;
   groupHolder.inflight = (async () => {
     const { data, error } = await supabase!.from('collection_product_groups')
-      .select(`category_id, subcategory_slug, display_order, categories(slug), products(${PRODUCT_SELECT})`)
+      .select(`category_id, subcategory_slug, display_order, categories!collection_product_groups_category_id_fkey(slug), products(${PRODUCT_SELECT})`)
       .order('display_order');
     if (error || !data) return [];
     const groups = new Map<string, CollectionProductGroup>();

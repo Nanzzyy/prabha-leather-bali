@@ -34,7 +34,7 @@ export async function getCatalogProducts() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, title, slug, description, leather_type, base_price_usd, is_featured, categories(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)')
+        .select('id, title, slug, description, leather_type, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)')
         .order('is_featured', { ascending: false });
 
       if (!error && data?.length) {

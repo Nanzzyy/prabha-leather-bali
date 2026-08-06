@@ -6,7 +6,7 @@ import type { Store } from '@/components/ContactClient';
 // mapping in src/lib/repositories/index.ts so the storefront shape stays identical.
 // Returns null on any failure so callers fall back to the build-time prop.
 
-const SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_featured, categories(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
+const SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
 
 const KNOWN: Product['category'][] = ['boots', 'bags', 'wallets', 'accessories', 'jackets'];
 const LIVE_CACHE_TTL = 60_000;
