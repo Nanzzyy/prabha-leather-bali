@@ -1,0 +1,11 @@
+{
+  "framework": null,
+  "outputDirectory": "out",
+  "cleanUrls": true,
+  "trailingSlash": true,
+  "rewrites": [
+    { "source": "/en/:path*", "destination": "/en/:path*/index.html" },
+    { "source": "/id/:path*", "destination": "/id/:path*/index.html" },
+    { "source": "/admin/:path*", "destination": "/admin/:path*/index.html" }
+  ]
+}
