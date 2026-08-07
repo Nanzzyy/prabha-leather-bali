@@ -91,7 +91,7 @@ function mapProduct(row: any): AdminProduct {
 
 const PRODUCT_SELECT = `
   id, title, slug, description, leather_type, base_price_usd, is_featured, created_at,
-  categories ( id, name, slug ),
+  categories!products_category_id_fkey ( id, name, slug ),
   product_images ( id, image_url, is_primary, display_order ),
   product_variants ( id, sku, color_name, color_hex, size_eu, image_url, stock_status )
 `;
