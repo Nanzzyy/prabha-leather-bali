@@ -1,6 +1,0 @@
-{
-  "outputDirectory": "out",
-  "installCommand": "npm install",
-  "buildCommand": "next build",
-  "framework": null
-}
