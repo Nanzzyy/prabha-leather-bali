@@ -1,6 +1,10 @@
 import { Pool } from 'pg';
 import { IProductRepository, Product } from '../types/repository';
 
+if (typeof window !== 'undefined') {
+  throw new Error('PostgresAdapter must not be imported in a browser context. Keep DATABASE_URL server-side only.');
+}
+
 const pool = process.env.DATABASE_URL
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
