@@ -466,7 +466,7 @@ em { font-style: italic; }
 .site-footer__policies a { color: #8c8179; font-size: 11px; letter-spacing: .06em; transition: color .25s ease; }
 .site-footer__policies a:hover { color: #fff; }
 .locale-switch { position: relative; display: inline-flex; }
-.locale-switch__menu { position: absolute; top: 100%; right: 0; margin-top: 8px; min-width: 168px; padding: 6px; border: 1px solid var(--border); background: var(--bone); box-shadow: 0 16px 40px rgba(24,19,17,.1); z-index: 60; }
+.locale-switch__menu { position: absolute; top: 100%; right: 0; margin-top: 0; min-width: 168px; padding: 6px; border: 1px solid var(--border); background: var(--bone); box-shadow: 0 16px 40px rgba(24,19,17,.1); z-index: 60; }
 .locale-switch__menu a { display: block; padding: 10px 12px; color: var(--muted); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
 .locale-switch__menu a:hover, .locale-switch__menu a.is-active { color: var(--ink); background: var(--bone-deep); }
 

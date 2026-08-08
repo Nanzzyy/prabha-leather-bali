@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { LANG_LABELS, LANGS, type Lang } from '@/lib/i18n/dictionaries';
 import { useLang } from '@/lib/i18n/LangContext';
@@ -12,9 +12,26 @@ export default function LocaleSwitch() {
   const pathname = usePathname() ?? '/';
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const rootRef = useRef<HTMLDivElement>(null);
 
   // query string is only known in the browser; read it after mount to avoid SSR mismatch.
   useEffect(() => setSearch(typeof window !== 'undefined' ? window.location.search : ''), []);
+
+  // Keep the menu open while the pointer crosses its small visual offset. The
+  // old mouseleave handler closed it before a language link could be clicked.
+  useEffect(() => {
+    if (!open) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', closeOnOutsidePointer);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsidePointer);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [open]);
 
   const target = (other: Lang) => {
     const match = pathname.match(/^\/(en|id)(\/.*)?$/);
@@ -24,7 +41,7 @@ export default function LocaleSwitch() {
   };
 
   return (
-    <div className="locale-switch" onMouseLeave={() => setOpen(false)}>
+    <div className="locale-switch" ref={rootRef}>
       <button type="button" className="header-action locale-switch__btn" onClick={() => setOpen((o) => !o)} aria-haspopup="true" aria-expanded={open} aria-label="Change language">
         {LANG_LABELS[lang]} <Icon>expand_more</Icon>
       </button>
