@@ -70,16 +70,17 @@
 .admin-btn {
   display: inline-flex; align-items: center; gap: 0.45rem;
   padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid transparent;
+  color: #1c1917;
   font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .admin-btn .material-symbols-outlined { font-size: 1.15rem; }
-.admin-btn--dark { background: #1c1917; color: #f5f3ee; }
+.admin-btn--dark, .admin-shell a.admin-btn--dark { background: #1c1917; color: #f5f3ee; }
 .admin-btn--dark:hover { background: #2a2622; }
-.admin-btn--outline { background: transparent; border-color: #d6cfc6; color: #1c1917; }
+.admin-btn--outline, .admin-shell a.admin-btn--outline { background: transparent; border-color: #d6cfc6; color: #1c1917; }
 .admin-btn--outline:hover { background: #efece7; }
-.admin-btn--danger { background: #fff; border-color: #e3bfb9; color: #b0413e; }
+.admin-btn--danger, .admin-shell a.admin-btn--danger { background: #fff; border-color: #e3bfb9; color: #b0413e; }
 .admin-btn--danger:hover { background: #fbeeea; }
-.admin-btn--ghost { background: transparent; color: #6b6259; padding: 0.4rem 0.6rem; }
+.admin-btn--ghost, .admin-shell a.admin-btn--ghost { background: transparent; color: #6b6259; padding: 0.4rem 0.6rem; }
 .admin-btn--ghost:hover { background: #efece7; color: #1c1917; }
 .admin-btn:disabled { opacity: 0.55; cursor: not-allowed; }
 .admin-tooltip { position: relative; }

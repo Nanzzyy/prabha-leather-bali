@@ -152,7 +152,8 @@ export async function saveProduct(input: ProductInput): Promise<string> {
   // Replace variants and images wholesale. Image files in Storage are only
   // removed when the user explicitly deletes one in the UI (deleteImage), so
   // re-inserting rows here does not orphan or delete stored files.
-  await sb.from('product_variants').delete().eq('product_id', id);
+  const { error: deleteVariantsError } = await sb.from('product_variants').delete().eq('product_id', id);
+  if (deleteVariantsError) throw deleteVariantsError;
   if (input.variants.length) {
     const variants = input.variants.map((v) => ({
       product_id: id, sku: v.sku.trim(), color_name: v.color_name.trim() || 'Default',
@@ -162,7 +163,8 @@ export async function saveProduct(input: ProductInput): Promise<string> {
     if (error) throw error;
   }
 
-  await sb.from('product_images').delete().eq('product_id', id);
+  const { error: deleteImagesError } = await sb.from('product_images').delete().eq('product_id', id);
+  if (deleteImagesError) throw deleteImagesError;
   if (input.images.length) {
     const images = input.images.map((img, idx) => ({
       product_id: id, image_url: img.image_url, is_primary: idx === 0 ? true : !!img.is_primary,
@@ -378,7 +380,8 @@ export async function listHeroes(): Promise<AdminHero[]> {
 
 export async function addHero(image_url: string, alt_text = 'Editorial view of handcrafted leather', caption = ''): Promise<void> {
   const sb = requireClient();
-  const { data: existing } = await sb.from('hero_images').select('id');
+  const { data: existing, error: existingError } = await sb.from('hero_images').select('id');
+  if (existingError) throw existingError;
   const { error } = await sb.from('hero_images').insert({ image_url, alt_text, caption, display_order: (existing?.length ?? 0), is_active: true });
   if (error) throw error;
 }
@@ -423,7 +426,8 @@ export async function saveStore(input: Partial<StoreInput> & { id?: string }): P
     if (error) throw error;
     return input.id;
   }
-  const { data: existing } = await sb.from('stores').select('id');
+  const { data: existing, error: existingError } = await sb.from('stores').select('id');
+  if (existingError) throw existingError;
   const { data, error } = await sb.from('stores').insert({ ...row, display_order: input.display_order ?? (existing?.length ?? 0) }).select('id').single();
   if (error) throw error;
   return data!.id;

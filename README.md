@@ -36,10 +36,17 @@ Start development:
 npm run dev
 ```
 
-Build the static site for Hostinger Shared Hosting:
+Build for Vercel (normal Next.js runtime):
 
 ```bash
 npm run build
+npm run start
 ```
 
-The generated static site is written to `out/`; upload its contents to `public_html`.
+For Hostinger Shared Hosting, opt into the static export explicitly:
+
+```bash
+NEXT_OUTPUT=export npm run build
+```
+
+The generated static site is then written to `out/`; upload its contents to `public_html`.
