@@ -29,7 +29,7 @@ export default function CatalogClient({ products: initialProducts }: Props) {
   const [liveGroups, setLiveGroups] = useState<CollectionProductGroup[] | null>(null);
   const { reportDataError } = useServiceStatus();
   useEffect(() => {
-    fetchLiveProducts()
+    fetchLiveProducts(true)
       .then((data) => {
         if (data === null && initialProducts.length === 0) reportDataError();
         if (data) setLive(data);

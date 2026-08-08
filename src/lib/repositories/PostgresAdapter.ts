@@ -32,7 +32,7 @@ export class PostgresAdapter implements IProductRepository {
           COALESCE(
             (SELECT json_agg(jsonb_build_object(
               'sku', v.sku, 'color', v.color_name, 'colorHex', v.color_hex,
-              'size', v.size_eu, 'priceAdjustment', 0, 'stockStatus', v.stock_status
+              'size', v.size_eu, 'image', v.image_url, 'priceAdjustment', 0, 'stockStatus', v.stock_status
             ) ORDER BY v.sku) FROM product_variants v WHERE v.product_id = p.id), '[]'
           ) AS variants
         FROM products p
@@ -65,7 +65,7 @@ export class PostgresAdapter implements IProductRepository {
           COALESCE(
             (SELECT json_agg(jsonb_build_object(
               'sku', v.sku, 'color', v.color_name, 'colorHex', v.color_hex,
-              'size', v.size_eu, 'priceAdjustment', 0, 'stockStatus', v.stock_status
+              'size', v.size_eu, 'image', v.image_url, 'priceAdjustment', 0, 'stockStatus', v.stock_status
             ) ORDER BY v.sku) FROM product_variants v WHERE v.product_id = p.id), '[]'
           ) AS variants
         FROM products p

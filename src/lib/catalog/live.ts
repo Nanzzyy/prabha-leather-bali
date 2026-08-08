@@ -77,8 +77,14 @@ export function mapLiveProductRow(row: any): Product {
   };
 }
 
-export async function fetchLiveProducts(): Promise<Product[] | null> {
+export async function fetchLiveProducts(fresh = false): Promise<Product[] | null> {
   if (!supabase) return null;
+  if (fresh) {
+    productHolder.entry = null;
+    if (typeof window !== 'undefined') {
+      try { window.sessionStorage.removeItem(productHolder.key); } catch { /* private mode */ }
+    }
+  }
   try {
     return await dedup(productHolder, LIVE_CACHE_TTL, async () => {
       const { data, error } = await supabase!.from('products').select(SELECT).order('is_featured', { ascending: false });

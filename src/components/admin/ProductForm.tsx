@@ -89,6 +89,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
     try { await deleteImageByUrl(img.image_url); }
     catch { /* storage file may already be gone — row removal is what matters */ }
     setImages((prev) => prev.filter((_, i) => i !== idx));
+    setVariants((prev) => prev.map((variant) => variant.image_url === img.image_url ? { ...variant, image_url: '' } : variant));
   };
 
   const categoryOptions = useMemo(() => categories.map((c) => ({ value: c.id, label: c.name })), [categories]);
@@ -179,6 +180,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
           <p className="admin-field__hint">Each variant needs a unique SKU (across all products) and a color name. Size is optional.</p>
           {variants.map((v, i) => (
             <div className="admin-variant" key={i}>
+              <div className="admin-variant__heading"><strong>Variant {i + 1}</strong><span>{v.color_name || 'Unnamed color'}</span></div>
               <div>
                 <span className="admin-variant__label">SKU</span>
                 <input type="text" value={v.sku} onChange={(e) => setVariant(i, { sku: e.target.value })} placeholder="DHB-TAN-42" />
@@ -200,8 +202,12 @@ export default function ProductForm({ productId }: { productId?: string }) {
                 <Select
                   value={v.image_url || ''}
                   onChange={(val) => setVariant(i, { image_url: val || '' })}
-                  options={[{ value: '', label: '— Use default gallery —' }, ...images.map((img, idx) => ({ value: img.image_url, label: `Image ${idx + 1}` }))]}
+                  options={[{ value: '', label: '— Use default gallery —' }, ...images.map((img, idx) => {
+                    const filename = img.image_url.split('/').pop()?.split('?')[0] || '';
+                    return { value: img.image_url, label: `Image ${idx + 1}${filename ? ` · ${filename}` : ''}` };
+                  })]}
                 />
+                {v.image_url && <div className="admin-variant__image-preview"><img src={v.image_url} alt="" /><span>Selected image</span></div>}
                 <span className="admin-field__hint">Shown on the product page when this color is picked. Just points to a gallery image.</span>
               </div>
               <div className="admin-variant__stock">

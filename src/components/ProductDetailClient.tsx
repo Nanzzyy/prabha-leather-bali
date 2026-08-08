@@ -23,9 +23,11 @@ export default function ProductDetailClient({ product: initialProduct, related }
   useEffect(() => { fetchLiveProductBySlug(initialProduct.slug).then(setLive).catch(() => {}); }, [initialProduct.slug]);
   const product = live ?? initialProduct;
   const [activeImage, setActiveImage] = useState(0);
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant>(product.variants[0] ?? {
+  const fallbackVariant: ProductVariant = {
     sku: product.id, color: '—', colorHex: '#8B4513', size: '', priceAdjustment: 0, stockStatus: 'available',
-  });
+  };
+  const [selectedVariantSku, setSelectedVariantSku] = useState(product.variants[0]?.sku || fallbackVariant.sku);
+  const selectedVariant = product.variants.find((variant) => variant.sku === selectedVariantSku) || product.variants[0] || fallbackVariant;
   const [quantity, setQuantity] = useState(1);
   const [emboss, setEmboss] = useState('');
   const addItem = useCartStore((state) => state.addItem);
@@ -36,23 +38,26 @@ export default function ProductDetailClient({ product: initialProduct, related }
   const sizes = useMemo(() => Array.from(new Set(product.variants.map((variant) => variant.size).filter(Boolean))), [product.variants]);
   const displayedPrice = product.basePrice + (selectedVariant?.priceAdjustment || 0);
 
-  const chooseColor = (color: string) => {
-    const next = product.variants.find((variant) => variant.color === color) || selectedVariant;
-    setSelectedVariant(next);
-    // If the variant points at a gallery image, aim the main gallery at it
-    // (pure redirect — no layout/structure change). Otherwise leave the gallery.
-    if (next?.image) {
-      const idx = product.images.indexOf(next.image);
-      if (idx >= 0) setActiveImage(idx);
-    }
+  const focusVariantImage = (variant: ProductVariant) => {
+    if (!variant.image) return;
+    const idx = product.images.indexOf(variant.image);
+    if (idx >= 0) setActiveImage(idx);
   };
-  // When the live product arrives (or slug changes), if the default variant has an
-  // image, start the gallery there.
-  useEffect(() => {
-    const first = product.variants[0];
-    if (first?.image) { const idx = product.images.indexOf(first.image); if (idx >= 0) setActiveImage(idx); }
-  }, [product]);
-  const chooseSize = (size: string) => setSelectedVariant(product.variants.find((variant) => variant.color === selectedVariant.color && variant.size === size) || product.variants.find((variant) => variant.size === size) || selectedVariant);
+
+  const chooseColor = (color: string) => {
+    const next = product.variants.find((variant) => variant.color === color && variant.size === selectedVariant.size)
+      || product.variants.find((variant) => variant.color === color)
+      || selectedVariant;
+    setSelectedVariantSku(next.sku);
+    focusVariantImage(next);
+  };
+  const chooseSize = (size: string) => {
+    const next = product.variants.find((variant) => variant.color === selectedVariant.color && variant.size === size)
+      || product.variants.find((variant) => variant.size === size)
+      || selectedVariant;
+    setSelectedVariantSku(next.sku);
+    focusVariantImage(next);
+  };
   const addToPouch = (event: React.MouseEvent<HTMLButtonElement>) => { if (!selectedVariant || selectedVariant.stockStatus === 'out_of_stock') return; addItem(product, selectedVariant, quantity, emboss); flyToPouch(event.currentTarget, product.images[activeImage] || product.images[0]); };
 
   return (
