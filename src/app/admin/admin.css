@@ -100,18 +100,20 @@
 .admin-field__label { font-size: 0.82rem; font-weight: 600; color: #3a342e; }
 .admin-field__hint { font-size: 0.78rem; color: #8a8178; }
 .admin-field__rowlabel { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-.admin-field input[type="text"], .admin-field input[type="number"], .admin-field input[type="email"],
-.admin-field input[type="password"], .admin-field input[type="url"], .admin-field textarea {
-  width: 100%; padding: 0.6rem 0.7rem; border: 1px solid #d6cfc6; border-radius: 8px;
-  font: inherit; background: #fff; color: #1c1917;
+.admin-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
+  width: 100%; min-height: 42px; height: 42px; padding: 0.6rem 0.7rem; border: 1px solid #d6cfc6; border-radius: 8px;
+  font: inherit; line-height: 1.2; background: #fff; color: #1c1917;
 }
-.admin-field input:focus, .admin-field textarea:focus { outline: 2px solid #1c1917; outline-offset: -1px; border-color: #1c1917; }
-.admin-field textarea { min-height: 90px; resize: vertical; }
-.admin-field input[type="number"] { max-width: 180px; }
+.admin-shell textarea {
+  width: 100%; min-height: 108px; padding: 0.6rem 0.7rem; border: 1px solid #d6cfc6; border-radius: 8px;
+  font: inherit; line-height: 1.45; background: #fff; color: #1c1917;
+}
+.admin-shell input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus, .admin-shell textarea:focus { outline: 2px solid #1c1917; outline-offset: -1px; border-color: #1c1917; }
+.admin-shell textarea { resize: vertical; }
 .admin-field--compact { align-content: start; }
 .admin-checkbox { display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; }
 .admin-checkbox input { width: 1.1rem; height: 1.1rem; }
-.admin-fieldrow { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.admin-fieldrow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; align-items: start; }
 .admin-sticky-actions {
   position: sticky; bottom: 0; margin-top: 1.5rem;
   display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;
@@ -119,7 +121,11 @@
 }
 
 /* the admin Select reuses .select* classes from globals.css; constrain width here */
-.admin-field .select, .admin-variant__stock .select { width: 100%; }
+.admin-field .select, .admin-variant__stock .select, .admin-variant__image .select, .admin-toolbar .select, .admin-content-locale .select { display: flex; width: 100%; }
+.admin-shell .select__trigger {
+  display: inline-flex; align-items: center; justify-content: space-between; width: 100%; min-height: 42px; height: 42px;
+  padding: 0.6rem 0.7rem; border: 1px solid #d6cfc6; border-radius: 8px; background: #fff; color: #1c1917; font-size: inherit; line-height: 1.2;
+}
 
 /* ---- Dashboard stats ---- */
 .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
@@ -311,7 +317,7 @@
 /* ---- Variants editor ---- */
 .admin-section { background: #fff; border: 1px solid #e7e1d9; border-radius: 12px; padding: 1.25rem; margin-top: 1rem; }
 .admin-section h2 { margin: 0 0 0.25rem; font-size: 1.05rem; }
-.admin-section .admin-field__hint { margin-bottom: 1rem; }
+.admin-section > .admin-field__hint { margin-bottom: 1rem; }
 .admin-variant { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.75rem; align-items: end; padding: 1rem 2.8rem 1rem 0; border: 1px solid #ece6de; border-radius: 10px; background: #fcfbf9; }
 .admin-variant + .admin-variant { margin-top: 0.75rem; }
 .admin-variant__heading { display: flex; align-items: baseline; justify-content: space-between; grid-column: 1 / -1; gap: 0.75rem; padding-bottom: 0.15rem; border-bottom: 1px solid #eee8e0; }
@@ -325,7 +331,7 @@
 .admin-variant__label { font-size: 0.72rem; color: #8a8178; text-transform: uppercase; letter-spacing: 0.08em; }
 .admin-variant__remove { position: absolute; top: 0.7rem; right: 0.35rem; }
 .admin-color-picker { position: relative; width: 100%; }
-.admin-color-picker__trigger { display: flex; align-items: center; gap: 0.45rem; width: 100%; height: 2.4rem; padding: 0.35rem 0.5rem; border: 1px solid #d6cfc6; border-radius: 8px; background: #fff; color: #3a342e; font-size: 0.78rem; cursor: pointer; }
+.admin-color-picker__trigger { display: flex; align-items: center; gap: 0.45rem; width: 100%; min-height: 42px; height: 42px; padding: 0.35rem 0.5rem; border: 1px solid #d6cfc6; border-radius: 8px; background: #fff; color: #3a342e; font-size: 0.78rem; cursor: pointer; }
 .admin-color-picker__trigger:hover { border-color: #8a8178; }
 .admin-color-picker__trigger > span:nth-child(2) { flex: 1; text-align: left; }
 .admin-color-picker__trigger > .material-symbols-outlined { font-size: 1rem; color: #8a8178; }

@@ -18,7 +18,7 @@ export default function CollectionHero() {
       <nav className="collection-page__hero-links" aria-label={hero.collectionLink}>
         <LocaleLink href="/collection/">{hero.collectionLink}</LocaleLink>
         <span aria-hidden="true">•</span>
-        {content.collection.items.slice(0, 3).map((item) => <LocaleLink key={item.slug} href={`/catalog/?category=${item.slug}`}>{item.title}</LocaleLink>)}
+        {content.collection.items.slice(0, 3).map((item) => <LocaleLink key={item.slug} href={`/collection/${item.slug}/`}>{item.title}</LocaleLink>)}
       </nav>
     </div>
     <span className="collection-page__hero-scroll"><Icon>south</Icon> {hero.scroll}</span>
