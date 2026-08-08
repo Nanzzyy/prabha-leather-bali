@@ -117,14 +117,16 @@ export default function AdminCategoriesPage() {
                       {ed ? <input type="text" value={ed.slug} onChange={(e) => setEditing((p) => ({ ...p, [c.id]: { ...p[c.id], slug: slugify(e.target.value) } }))} /> : c.slug}
                     </td>
                     <td data-label="Products">{counts[c.id] ?? 0}</td>
-                    <td data-label="" style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end' }}>
-                      {ed ? <>
-                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => saveEdit(c.id)} disabled={busy}><Icon>save</Icon></button>
-                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setEditing((p) => { const n = { ...p }; delete n[c.id]; return n; })} disabled={busy}><Icon>close</Icon></button>
-                      </> : <>
-                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setEditing((p) => ({ ...p, [c.id]: { name: c.name, slug: c.slug } }))}><Icon>edit</Icon></button>
-                        <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip={inUse ? 'Remove products first' : 'Delete category'} aria-label={inUse ? 'Remove products first' : `Delete ${c.name}`} onClick={() => setToDelete(c)} disabled={inUse}><Icon>delete</Icon></button>
-                      </>}
+                    <td data-label="Actions" className="admin-table__actions--icon">
+                      <div className="admin-table__action-group">
+                        {ed ? <>
+                          <button type="button" className="admin-btn admin-btn--ghost" onClick={() => saveEdit(c.id)} disabled={busy}><Icon>save</Icon></button>
+                          <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setEditing((p) => { const n = { ...p }; delete n[c.id]; return n; })} disabled={busy}><Icon>close</Icon></button>
+                        </> : <>
+                          <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setEditing((p) => ({ ...p, [c.id]: { name: c.name, slug: c.slug } }))}><Icon>edit</Icon></button>
+                          <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip={inUse ? 'Remove products first' : 'Delete category'} aria-label={inUse ? 'Remove products first' : `Delete ${c.name}`} onClick={() => setToDelete(c)} disabled={inUse}><Icon>delete</Icon></button>
+                        </>}
+                      </div>
                     </td>
                   </tr>
                 );

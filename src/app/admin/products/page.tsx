@@ -96,9 +96,11 @@ export default function AdminProductsPage() {
                       {out > 0 && <span className="admin-pill admin-pill--out">{out} out</span>}
                       {pre > 0 && <span className="admin-pill admin-pill--preorder">{pre} pre</span>}
                     </td>
-                    <td data-label="" style={{ display: 'flex', gap: '0.25rem', justifyContent: 'flex-end' }}>
-                      <Link href={`/admin/products/edit/?id=${p.id}`} className="admin-btn admin-btn--ghost"><Icon>edit</Icon></Link>
-                      <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setToDelete(p)} aria-label={`Delete ${p.title}`}><Icon>delete</Icon></button>
+                    <td data-label="Actions" className="admin-table__actions--icon">
+                      <div className="admin-table__action-group">
+                        <Link href={`/admin/products/edit/?id=${p.id}`} className="admin-btn admin-btn--ghost" aria-label={`Edit ${p.title}`}><Icon>edit</Icon></Link>
+                        <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setToDelete(p)} aria-label={`Delete ${p.title}`}><Icon>delete</Icon></button>
+                      </div>
                     </td>
                   </tr>
                 );
