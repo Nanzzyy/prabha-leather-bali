@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://fqygslqmhdiqypubdxkz.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxeWdzbHFtaGRpcXlwdWJkeGt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4NzQ1NDgsImV4cCI6MjEwMTQ1MDU0OH0.H3yfKJAWhY_ViOJTHO6kr7JTMI9N6SLK7hbjki-qXiU';
+import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase-config';
 
 /**
  * Public Supabase client used for build-time catalog reads.
