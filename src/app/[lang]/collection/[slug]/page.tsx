@@ -4,7 +4,8 @@ import { getCatalogProducts } from '@/lib/repositories';
 import CollectionBrowser from '@/components/CollectionBrowser';
 import { getPageMetadata } from '@/lib/seo/metadata';
 
-export const dynamicParams = true;
+// Static Hostinger exports can only emit paths known at build time.
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return LANGS.flatMap((lang) => getDefaultContent(lang).collection.items.map((item) => ({ lang, slug: item.slug })));

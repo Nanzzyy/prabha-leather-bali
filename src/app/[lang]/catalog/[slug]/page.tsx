@@ -3,7 +3,8 @@ import ProductDetailClient from '@/components/ProductDetailClient';
 import { getCatalogProductBySlug, getCatalogProducts } from '@/lib/repositories';
 import { getPageMetadata } from '@/lib/seo/metadata';
 
-export const dynamicParams = true;
+// Static Hostinger exports can only emit paths known at build time.
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const products = await getCatalogProducts();
