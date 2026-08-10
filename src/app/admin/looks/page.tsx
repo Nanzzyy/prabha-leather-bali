@@ -224,7 +224,7 @@ function LookCard({ initial, isNew, slotNumber, busy, productOptions, onSave, on
           {images.map((url, imageIndex) => (
             <div className={`admin-look-media ${activeImage === imageIndex ? 'is-selected' : ''}`} key={imageIndex}>
               <button type="button" className="admin-look-media__select" onClick={() => { setActiveImage(imageIndex); if (!url) fileRefs.current[imageIndex]?.click(); }} aria-pressed={activeImage === imageIndex}>
-                {url ? <img src={url} alt={`Look image ${imageIndex + 1}`} /> : <span><Icon>add_photo_alternate</Icon><strong>{imageIndex === 0 ? 'Add primary image' : 'Add second image'}</strong><small>{imageIndex === 0 ? 'Required' : 'Optional'}</small></span>}
+                {url ? <img src={url} alt={`Look image ${imageIndex + 1}`} loading="lazy" /> : <span><Icon>add_photo_alternate</Icon><strong>{imageIndex === 0 ? 'Add primary image' : 'Add second image'}</strong><small>{imageIndex === 0 ? 'Required' : 'Optional'}</small></span>}
               </button>
               <div className="admin-look-media__footer">
                 <span>Image {imageIndex + 1}{imageIndex === 0 ? ' · Primary' : ' · Optional'}</span>
@@ -302,7 +302,7 @@ function HotspotCanvas({ image, spots, onMove, onAdd }: {
 
   return (
     <div className="admin-hotspot-canvas" ref={ref} onPointerDown={() => { moved.current = false; }} onPointerMove={onMoveEv} onPointerUp={() => { dragIdx.current = null; }} onPointerLeave={() => { dragIdx.current = null; }} onClick={onCanvasClick}>
-      {image ? <img src={image} alt="Selected look" data-bg="1" draggable={false} /> : <div className="admin-hotspot-empty" data-bg="1"><Icon>image</Icon><span>Upload an image to place hotspots.</span></div>}
+      {image ? <img src={image} alt="Selected look" data-bg="1" draggable={false} loading="lazy" /> : <div className="admin-hotspot-empty" data-bg="1"><Icon>image</Icon><span>Upload an image to place hotspots.</span></div>}
       {image && spots.map((s, i) => <div key={s.id ?? i} className="admin-hotspot-marker" style={{ left: `${s.x}%`, top: `${s.y}%` }} onPointerDown={(e) => startDrag(e, i)}><span>{i + 1}</span></div>)}
       {image && <span className="admin-hotspot-hint">Click to add · drag to move</span>}
     </div>

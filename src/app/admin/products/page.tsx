@@ -84,7 +84,7 @@ export default function AdminProductsPage() {
                   <tr key={p.id}>
                     <td data-label="">
                       <div className="admin-table__head-cell">
-                        {p.images[0] ? <img src={p.images[0].image_url} alt="" className="admin-table__thumb" /> : <span className="admin-table__thumb admin-table__thumb--empty"><Icon>image</Icon></span>}
+                        {p.images[0] ? <img src={p.images[0].image_url} alt="" loading="lazy" className="admin-table__thumb" /> : <span className="admin-table__thumb admin-table__thumb--empty"><Icon>image</Icon></span>}
                         <span>{p.title}</span>
                       </div>
                     </td>

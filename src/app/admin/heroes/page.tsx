@@ -100,7 +100,7 @@ export default function AdminHeroesPage() {
         <div className="admin-images" style={{ marginTop: '1rem' }}>
           {heroes.map((h, i) => (
             <div className="admin-image admin-hero-card" key={h.id}>
-              <img src={h.image_url} alt={h.alt_text} />
+              <img src={h.image_url} alt={h.alt_text} loading="lazy" />
               {!h.is_active && <span className="admin-image__primary" style={{ background: '#8a8178' }}>Hidden</span>}
               <div className="admin-image__actions">
                 <div style={{ display: 'flex', gap: '0.25rem' }}>
