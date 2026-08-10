@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
+    // Hostinger static exports do not run the /_next/image optimizer route.
+    // Keep the optimized loader for Node deployments, but emit direct source
+    // URLs for the static build so remote CMS images remain loadable.
+    unoptimized: process.env.NEXT_OUTPUT === 'export',
     minimumCacheTTL: 31536000,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],

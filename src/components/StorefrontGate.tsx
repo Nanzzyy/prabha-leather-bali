@@ -13,7 +13,7 @@ function subscribeNetwork(notify: () => void) {
 }
 
 export default function StorefrontGate({ children }: { children: React.ReactNode }) {
-  const { loading, unavailable } = useSiteContent();
+  const { unavailable } = useSiteContent();
   const { reportDataError } = useServiceStatus();
   const online = useSyncExternalStore(subscribeNetwork, () => navigator.onLine, () => true);
 
@@ -27,13 +27,6 @@ export default function StorefrontGate({ children }: { children: React.ReactNode
   if (!online) return <MaintenanceState compact />;
   return (
     <>
-      {loading && (
-        <div className="storefront-loader" role="status" aria-live="polite">
-          <div className="storefront-loader__mark"><span>PRABA</span><small>LEATHER BALI</small></div>
-          <span className="storefront-loader__bar" />
-          <p>Preparing the collection…</p>
-        </div>
-      )}
       <div className="storefront-reveal">
         <ServiceBanner />
         {children}

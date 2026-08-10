@@ -22,7 +22,7 @@ export default function HeroCarousel() {
   return (
     <section className="hero-carousel" aria-label="Praba Leather editorial collection">
       {slides.map((image, index) => (
-        <Image key={image.image_url} src={image.image_url} alt={image.alt_text} fill preload={index === 0} sizes="100vw" className={`hero-carousel__image ${index === active ? 'hero-carousel__image--active' : ''}`} />
+        (index === active || index === (active + 1) % slides.length) && <Image key={image.image_url} src={image.image_url} alt={image.alt_text} fill preload={index === 0} sizes="100vw" className={`hero-carousel__image ${index === active ? 'hero-carousel__image--active' : ''}`} />
       ))}
       <div className="hero-carousel__veil" />
       <div className="hero-carousel__caption"><span>{String(active + 1).padStart(2, '0')} - {String(slides.length).padStart(2, '0')}</span><span>{slides[active]?.caption || 'Full-grain leather / Bali, Indonesia'}</span></div>
