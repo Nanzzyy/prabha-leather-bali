@@ -214,6 +214,7 @@
 .admin-table__thumb--empty { display: grid; place-items: center; color: var(--muted); }
 .admin-table__thumb--empty .material-symbols-outlined { font-size: 1.2rem; }
 .admin-table__head-cell { display: flex; gap: 0.75rem; align-items: center; font-weight: 600; }
+.admin-table td[data-label="Products"] > .admin-field__hint { display: inline-block; margin-left: 0.4rem; }
 .admin-pill { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.72rem; font-weight: 600; background: var(--bone-deep); color: var(--muted); }
 .admin-pill--featured { background: var(--ink); color: var(--bone); }
 .admin-pill--out { background: #fdf2f0; color: #b0413e; }
