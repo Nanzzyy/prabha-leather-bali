@@ -32,6 +32,7 @@ const NAV_GROUPS = [
       { href: '/admin/looks/', label: 'Curated Looks', icon: 'collections' },
       { href: '/admin/heroes/', label: 'Homepage Heroes', icon: 'photo_library' },
       { href: '/admin/content/', label: 'Site Content', icon: 'edit_document' },
+      { href: '/admin/icons/', label: 'Icon library', icon: 'apps' },
     ]
   },
   {

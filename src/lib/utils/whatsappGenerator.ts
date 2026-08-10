@@ -30,9 +30,11 @@ export function generateWhatsAppPayload(cartItems: CartItem[], customer: Custome
   const destination = customer.destination.trim();
   const notes = customer.notes?.trim();
 
-  let message = `Hi, I'm ${name || 'there'}, I'd like to check out the following item${cartItems.length === 1 ? '' : 's'}:\n\n`;
+  let message = `Hi Praba Leather Bali 👋\n\n`;
+  message += `I'm ${name || '[Name]'} from ${destination || '[Region]'}.\n`;
+  message += `I'm really interested in the following piece${cartItems.length === 1 ? '' : 's'} in my pouch:\n\n`;
 
-  message += `*ORDER DETAILS*\n`;
+  message += `*ITEMS IN MY POUCH*\n`;
   let totalPrice = 0;
   cartItems.forEach((item, index) => {
     const itemPrice = item.product.basePrice + (item.variant.priceAdjustment || 0);
@@ -40,22 +42,19 @@ export function generateWhatsAppPayload(cartItems: CartItem[], customer: Custome
     totalPrice += subtotal;
 
     message += `${index + 1}. *${item.product.name}*\n`;
-    const variantParts = [item.variant.color];
+    const variantParts = item.variant.color ? [`Color: ${item.variant.color}`] : [];
     if (item.variant.size) variantParts.push(`Size ${item.variant.size}`);
-    message += `   - Variant: ${variantParts.join(' / ')}\n`;
-    if (item.customEmboss) message += `   - Custom stamp: "${item.customEmboss}"\n`;
-    message += `   - Price: ${formatUSD(itemPrice)} x ${item.quantity}\n`;
+    if (variantParts.length) message += `   • ${variantParts.join(' · ')}\n`;
+    if (item.customEmboss) message += `   • Custom stamp: "${item.customEmboss}"\n`;
+    message += `   • ${formatUSD(itemPrice)} × ${item.quantity}\n`;
   });
 
-  message += `\n----------------------------------\n`;
-  message += `*Estimated subtotal:* ${formatUSD(totalPrice)}\n`;
-  message += `----------------------------------\n\n`;
+  message += `\n*ESTIMATED TOTAL*  ${formatUSD(totalPrice)}\n`;
+  message += `*SHIPPING TO*  ${destination || '[Region]'}\n\n`;
 
-  message += `*DELIVERY*\n- ${destination || '—'}\n\n`;
+  if (notes) message += `*NOTE FOR THE ARTISAN*\n${notes}\n\n`;
 
-  if (notes) message += `*NOTE FOR ARTISAN*\n${notes}\n\n`;
-
-  message += `Please confirm stock availability and shipping costs. Thank you! — ${BRAND_NAME}`;
+  message += `Could you please confirm availability, personalization, and shipping options?\n\nThank you!\n${name || 'A Praba Leather customer'} — ${BRAND_NAME}`;
 
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${ADMIN_PHONE}?text=${encodedMessage}`;

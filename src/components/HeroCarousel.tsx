@@ -25,7 +25,7 @@ export default function HeroCarousel() {
         <Image key={image.image_url} src={image.image_url} alt={image.alt_text} fill priority={index === 0} sizes="100vw" className={`hero-carousel__image ${index === active ? 'hero-carousel__image--active' : ''}`} />
       ))}
       <div className="hero-carousel__veil" />
-      <div className="hero-carousel__caption"><span>0{active + 1} — {String(slides.length).padStart(2, '0')}</span><span>{slides[active]?.caption || 'Full-grain leather / Bali, Indonesia'}</span></div>
+      <div className="hero-carousel__caption"><span>{String(active + 1).padStart(2, '0')} - {String(slides.length).padStart(2, '0')}</span><span>{slides[active]?.caption || 'Full-grain leather / Bali, Indonesia'}</span></div>
       <div className="hero-carousel__controls" aria-label="Hero slides">
         <button type="button" onClick={() => setActive((active - 1 + slides.length) % slides.length)} aria-label="Previous slide"><Icon>arrow_back</Icon></button>
         {slides.map((image, index) => <button key={image.image_url} type="button" onClick={() => setActive(index)} className={index === active ? 'is-active' : ''} aria-label={`Go to slide ${index + 1}`} />)}

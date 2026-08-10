@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import Icon from '@/components/Icon';
 import Select from '@/components/Select';
+import { IconPickerField } from '@/components/admin/IconLibrary';
 import { Toast, useToast } from '@/components/admin/Toast';
 import { Confirm } from '@/components/admin/Confirm';
 import {
@@ -330,7 +331,7 @@ function AboutEditor({ value, onChange, onError }: { value: SiteContent['about']
       <EditorCard title="About hero"><StringFields values={value.hero} onChange={(key, next) => onChange({ ...value, hero: { ...value.hero, [key]: next } })} /></EditorCard>
       <EditorCard title="Feature pillars">
         <Repeater items={value.features} addLabel="Add feature" onAdd={() => onChange({ ...value, features: [...value.features, { icon: 'star', title: '', body: '' }] })} onRemove={(index) => onChange({ ...value, features: value.features.filter((_, itemIndex) => itemIndex !== index) })} render={(item, index) => <FieldGrid fields={[
-          <TextField key="icon" label="Icon name" value={item.icon} onChange={(next) => updateFeature(index, { icon: next })} />,
+          <IconPickerField key="icon" label="Icon" value={item.icon} onChange={(next) => updateFeature(index, { icon: next })} />,
           <TextField key="title" label="Title" value={item.title} onChange={(next) => updateFeature(index, { title: next })} />,
           <TextField key="body" label="Description" value={item.body} onChange={(next) => updateFeature(index, { body: next })} multiline />,
         ]} />} />
@@ -349,7 +350,7 @@ function AboutEditor({ value, onChange, onError }: { value: SiteContent['about']
       <EditorCard title="Shop Gram"><StringFields values={{ title: value.shopgram.title, intro: value.shopgram.intro }} multilineKeys={['intro']} onChange={(key, next) => onChange({ ...value, shopgram: { ...value.shopgram, [key]: next } })} /><Repeater items={value.shopgram.items} addLabel="Add image" onAdd={() => onChange({ ...value, shopgram: { ...value.shopgram, items: [...value.shopgram.items, { image_url: '', alt: '', label: '', icon: 'image' }] } })} onRemove={(index) => onChange({ ...value, shopgram: { ...value.shopgram, items: value.shopgram.items.filter((_, itemIndex) => itemIndex !== index) } })} render={(item, index) => <FieldGrid fields={[
         <TextField key="alt" label="Alt text" value={item.alt} onChange={(next) => updateShopgram(index, { alt: next })} />,
         <TextField key="label" label="Placeholder label" value={item.label} onChange={(next) => updateShopgram(index, { label: next })} />,
-        <TextField key="icon" label="Placeholder icon" value={item.icon} onChange={(next) => updateShopgram(index, { icon: next })} />,
+        <IconPickerField key="icon" label="Placeholder icon" value={item.icon} onChange={(next) => updateShopgram(index, { icon: next })} />,
         <ImageField key="image" label="Image" value={item} onChange={(next) => updateShopgram(index, { image_url: next.image_url, alt: next.alt })} onError={onError} />,
       ]} />} /></EditorCard>
     </div>

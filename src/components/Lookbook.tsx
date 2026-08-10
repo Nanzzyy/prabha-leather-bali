@@ -80,11 +80,12 @@ export default function Lookbook() {
                         onFocus={() => openSpot(key)}
                         onBlur={() => scheduleClose()}
                       >
-                        <button type="button" className={`look__dot ${isOpen ? 'is-active' : ''}`} aria-label={spot.product.name} aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : key)}>
+                        <button type="button" className={`look__dot ${isOpen ? 'is-active' : ''}`} aria-label={spot.product.name} aria-expanded={isOpen} onClick={() => setOpen(key)}>
                           <span />
                         </button>
                         {isOpen && (
                           <div className="look__card" role="dialog" aria-label={spot.product.name}>
+                            <button type="button" className="look__card-close" onClick={() => setOpen(null)} aria-label={`Close ${spot.product.name}`}><Icon>close</Icon></button>
                             <div className="look__card-img">
                               {spot.product.images[0]
                                 ? <Image src={spot.product.images[0]} alt={spot.product.name} fill sizes="120px" />

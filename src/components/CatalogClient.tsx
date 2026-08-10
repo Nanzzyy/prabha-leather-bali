@@ -44,7 +44,7 @@ export default function CatalogClient({ products: initialProducts }: Props) {
   const [search, setSearch] = useState<string | null>(null);
   const [sort, setSort] = useState('featured');
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [gridColumns, setGridColumns] = useState(3);
+  const [gridColumns, setGridColumns] = useState(2);
   const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
   const { content } = useSiteContent();
   const { ui, categories: categoryLabels } = content.catalog;
@@ -113,7 +113,7 @@ export default function CatalogClient({ products: initialProducts }: Props) {
   const categoryGroups = useMemo(() => {
     const groupCategories = activeCategory === 'all' ? categories.filter((item) => item !== 'all') : [activeCategory];
     return groupCategories.map((slug) => ({ slug, title: categoryLabels[slug] || slug, products: filteredProducts.filter((product) => product.category === slug) })).filter((group) => group.products.length > 0);
-  }, [activeCategory, filteredProducts]);
+  }, [activeCategory, categoryLabels, filteredProducts]);
 
   const getVisibleCount = (group: string) => visibleCounts[group] || 2;
   const loadMore = (group: string) => setVisibleCounts((counts) => ({ ...counts, [group]: getVisibleCount(group) + 4 }));
@@ -131,6 +131,7 @@ export default function CatalogClient({ products: initialProducts }: Props) {
         </div>
         <Select className="catalog-toolbar__sort" label={ui.sortBy} value={sort} onChange={setSort} options={[{ value: 'featured', label: ui.featured }, { value: 'price-low', label: ui.priceLow }, { value: 'price-high', label: ui.priceHigh }]} />
       </div>
+      {filtersOpen && <button type="button" className="catalog-filter-backdrop" onClick={() => setFiltersOpen(false)} aria-label={ui.filter} />}
       <div className={`catalog-layout ${filtersOpen ? 'catalog-layout--filters-open' : 'catalog-layout--filters-closed'}`}>
         <aside className={`catalog-sidebar ${filtersOpen ? 'catalog-sidebar--open' : 'catalog-sidebar--collapsed'}`}>
         <div className="catalog-sidebar__panel">
