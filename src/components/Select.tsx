@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Icon from './Icon';
 
-export type SelectOption = { value: string; label: string };
+export type SelectOption = { value: string; label: string; prefix?: ReactNode };
 
 interface Props {
   value: string;
@@ -48,13 +48,13 @@ export default function Select({ value, options, onChange, label, className = ''
     <div className={`select ${className}`} ref={rootRef} onKeyDown={onKeyDown}>
       {label && <span className="select__label">{label}</span>}
       <button type="button" className="select__trigger" onClick={() => setOpen((o) => !o)} aria-haspopup="listbox" aria-expanded={open}>
-        <span>{selected?.label}</span><Icon>expand_more</Icon>
+        <span className="select__value">{selected?.prefix}{selected?.label}</span><Icon>expand_more</Icon>
       </button>
       {open && (
         <ul className="select__menu" role="listbox">
           {options.map((o, i) => (
             <li key={o.value} role="option" aria-selected={o.value === value}>
-              <button type="button" className={`select__option ${o.value === value ? 'is-selected' : ''} ${i === focusIdx ? 'is-focused' : ''}`} onClick={() => choose(o.value)} onMouseEnter={() => setFocusIdx(i)}>{o.label}</button>
+              <button type="button" className={`select__option ${o.value === value ? 'is-selected' : ''} ${i === focusIdx ? 'is-focused' : ''}`} onClick={() => choose(o.value)} onMouseEnter={() => setFocusIdx(i)}><span className="select__value">{o.prefix}{o.label}</span></button>
             </li>
           ))}
         </ul>

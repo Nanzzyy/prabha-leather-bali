@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Icon from '@/components/Icon';
+import AdminPageHead from '@/components/admin/AdminPageHead';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 import { useToast, Toast } from '@/components/admin/Toast';
 import { Confirm } from '@/components/admin/Confirm';
 import { AdminStore, listStores, saveStore, deleteStore } from '@/lib/admin/queries';
@@ -41,17 +43,17 @@ export default function AdminStoresPage() {
 
   return (
     <>
-      <div className="admin-pagehead">
-        <div>
-          <h1>Stores</h1>
-          <p>Contact page ateliers. The first active store opens selected on the map.</p>
-        </div>
-      </div>
+      <AdminPageHead
+        breadcrumbs={[{ label: 'Dashboard', href: '/admin/' }, { label: 'Store locations' }]}
+        eyebrow="Store settings"
+        title="Store locations"
+        description="Manage the ateliers shown on the Contact page. The first active store opens selected on the map."
+      />
 
       <StoreCard key="new" initial={EMPTY} isNew busy={busy} onSave={save} />
 
       {!stores ? <div className="admin-loading"><Icon>progress_activity</Icon></div> : stores.length === 0 ? (
-        <div className="admin-empty"><Icon>storefront</Icon><p>No stores yet. Add the first atelier above.</p></div>
+        <AdminEmptyState icon="storefront" title="No stores yet" description="Add the first atelier above to make it available on the Contact page." />
       ) : stores.map((s) => (
         <StoreCard key={s.id} initial={s} busy={busy} onSave={save} onDelete={() => setToDelete(s)} />
       ))}
@@ -74,26 +76,29 @@ function StoreCard({ initial, isNew, busy, onSave, onDelete }: {
   const set = (patch: Partial<typeof d>) => setD((prev) => ({ ...prev, ...patch }));
 
   return (
-    <form className="admin-section" noValidate onSubmit={(e) => { e.preventDefault(); onSave({ ...d, id }); }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-        <h2>{isNew ? 'Add store' : (d.name || 'Untitled store')}</h2>
-        <label className="admin-checkbox"><input type="checkbox" checked={d.is_active} onChange={(e) => set({ is_active: e.target.checked })} /> Active</label>
-      </div>
-      <div className="admin-fieldrow">
+    <details className="admin-section admin-store-card" open={isNew || undefined}>
+      <summary className="admin-store-card__summary"><span>{isNew ? 'Add store' : (d.name || 'Untitled store')}</span><Icon>expand_more</Icon></summary>
+      <form noValidate onSubmit={(e) => { e.preventDefault(); onSave({ ...d, id }); }}>
+        <div className="admin-store-card__head">
+          <span className="admin-field__hint">{isNew ? 'Add a new atelier location.' : 'Expand to edit this store.'}</span>
+          <label className="admin-checkbox"><input type="checkbox" checked={d.is_active} onChange={(e) => set({ is_active: e.target.checked })} /> Active</label>
+        </div>
+        <div className="admin-fieldrow">
         <label className="admin-field"><span className="admin-field__label">Name</span><input type="text" value={d.name} onChange={(e) => set({ name: e.target.value })} /></label>
         <label className="admin-field"><span className="admin-field__label">Hours</span><input type="text" value={d.hours} onChange={(e) => set({ hours: e.target.value })} placeholder="Mon–Sat · 09:00–19:00" /></label>
-      </div>
-      <div className="admin-fieldrow">
+        </div>
+        <div className="admin-fieldrow">
         <label className="admin-field"><span className="admin-field__label">Phone (display)</span><input type="text" value={d.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="+62 818 …" /></label>
         <label className="admin-field"><span className="admin-field__label">Phone link (tel:)</span><input type="text" value={d.phone_href} onChange={(e) => set({ phone_href: e.target.value })} placeholder="+62818…" /></label>
-      </div>
-      <label className="admin-field"><span className="admin-field__label">Email</span><input type="text" inputMode="email" value={d.email} onChange={(e) => set({ email: e.target.value })} placeholder="hello@prabaleather.com" /></label>
-      <label className="admin-field"><span className="admin-field__label">Address</span><input type="text" value={d.address} onChange={(e) => set({ address: e.target.value })} /></label>
-      <label className="admin-field"><span className="admin-field__label">Map query</span><input type="text" value={d.map_query} onChange={(e) => set({ map_query: e.target.value })} placeholder="Jl. Nelayan, Canggu, Bali" /></label>
-      <div className="admin-sticky-actions">
-        <button type="submit" className="admin-btn admin-btn--dark" disabled={busy}><Icon>save</Icon> {isNew ? 'Add store' : 'Save changes'}</button>
-        {onDelete && <button type="button" className="admin-btn admin-btn--danger" onClick={onDelete} disabled={busy}><Icon>delete</Icon> Delete</button>}
-      </div>
-    </form>
+        </div>
+        <label className="admin-field"><span className="admin-field__label">Email</span><input type="text" inputMode="email" value={d.email} onChange={(e) => set({ email: e.target.value })} placeholder="hello@prabaleather.com" /></label>
+        <label className="admin-field"><span className="admin-field__label">Address</span><input type="text" value={d.address} onChange={(e) => set({ address: e.target.value })} /></label>
+        <label className="admin-field"><span className="admin-field__label">Map query</span><input type="text" value={d.map_query} onChange={(e) => set({ map_query: e.target.value })} placeholder="Jl. Nelayan, Canggu, Bali" /></label>
+        <div className="admin-sticky-actions">
+          <button type="submit" className="admin-btn admin-btn--dark" disabled={busy}><Icon>save</Icon> {isNew ? 'Add store' : 'Save changes'}</button>
+          {onDelete && <button type="button" className="admin-btn admin-btn--danger" onClick={onDelete} disabled={busy}><Icon>delete</Icon> Delete</button>}
+        </div>
+      </form>
+    </details>
   );
 }

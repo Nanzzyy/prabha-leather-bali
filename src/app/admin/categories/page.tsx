@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Icon from '@/components/Icon';
+import AdminPageHead from '@/components/admin/AdminPageHead';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 import { useToast, Toast } from '@/components/admin/Toast';
 import { Confirm } from '@/components/admin/Confirm';
 import {
@@ -17,7 +19,9 @@ export default function AdminCategoriesPage() {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ name?: string; slug?: string }>({});
   const [editing, setEditing] = useState<Record<string, { name: string; slug: string }>>({});
+  const [editErrors, setEditErrors] = useState<Record<string, { name?: string; slug?: string }>>({});
   const [toDelete, setToDelete] = useState<AdminCategory | null>(null);
   const [busy, setBusy] = useState(false);
   const { toast, ok, err, clear } = useToast();
@@ -29,11 +33,13 @@ export default function AdminCategoriesPage() {
   };
   useEffect(load, []);
 
-  const onName = (v: string) => { setName(v); if (!slugTouched) setSlug(slugify(v)); };
+  const onName = (v: string) => { setName(v); setFormErrors((previous) => ({ ...previous, name: undefined })); if (!slugTouched) setSlug(slugify(v)); };
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !slug.trim()) return err('Name and slug required.');
+    const nextErrors = { name: name.trim() ? undefined : 'Category name is required.', slug: slug.trim() ? undefined : 'Slug is required.' };
+    setFormErrors(nextErrors);
+    if (nextErrors.name || nextErrors.slug) return;
     setBusy(true);
     try {
       await createCategory(name, slug);
@@ -48,7 +54,10 @@ export default function AdminCategoriesPage() {
 
   const saveEdit = async (id: string) => {
     const ed = editing[id];
-    if (!ed || !ed.name.trim() || !ed.slug.trim()) return;
+    if (!ed) return;
+    const nextErrors = { name: ed.name.trim() ? undefined : 'Name is required.', slug: ed.slug.trim() ? undefined : 'Slug is required.' };
+    setEditErrors((previous) => ({ ...previous, [id]: nextErrors }));
+    if (nextErrors.name || nextErrors.slug) return;
     setBusy(true);
     try {
       await updateCategory(id, ed.name, ed.slug);
@@ -76,30 +85,32 @@ export default function AdminCategoriesPage() {
 
   return (
     <>
-      <div className="admin-pagehead">
-        <div>
-          <h1>Categories</h1>
-          <p>Group products into collections. Deleting is blocked while products use it.</p>
-        </div>
-      </div>
+      <AdminPageHead
+        breadcrumbs={[{ label: 'Dashboard', href: '/admin/' }, { label: 'Categories' }]}
+        eyebrow="Catalog"
+        title="Categories"
+        description="Group products into collections. Deleting is blocked while products use a category."
+      />
 
       <form className="admin-section" noValidate onSubmit={add} style={{ display: 'grid', gap: '0.75rem' }}>
         <h2 style={{ margin: 0 }}>Add category</h2>
         <div className="admin-fieldrow">
           <label className="admin-field">
             <span className="admin-field__label">Name</span>
-            <input type="text" value={name} onChange={(e) => onName(e.target.value)} placeholder="Belts" />
+            <input type="text" value={name} onChange={(e) => onName(e.target.value)} placeholder="Belts" aria-invalid={!!formErrors.name} aria-describedby={formErrors.name ? 'category-name-error' : undefined} />
+            {formErrors.name && <span className="admin-field__error" id="category-name-error">{formErrors.name}</span>}
           </label>
           <label className="admin-field">
             <span className="admin-field__label">Slug</span>
-            <input type="text" value={slug} onChange={(e) => { setSlug(slugify(e.target.value)); setSlugTouched(true); }} placeholder="belts" />
+            <input type="text" value={slug} onChange={(e) => { setSlug(slugify(e.target.value)); setSlugTouched(true); setFormErrors((previous) => ({ ...previous, slug: undefined })); }} placeholder="belts" aria-invalid={!!formErrors.slug} aria-describedby={formErrors.slug ? 'category-slug-error' : undefined} />
+            {formErrors.slug && <span className="admin-field__error" id="category-slug-error">{formErrors.slug}</span>}
           </label>
         </div>
         <button type="submit" className="admin-btn admin-btn--dark" disabled={busy}><Icon>add</Icon> Add</button>
       </form>
 
       {!cats ? <div className="admin-loading"><Icon>progress_activity</Icon></div> : cats.length === 0 ? (
-        <div className="admin-tablewrap"><div className="admin-empty"><Icon>category</Icon><p>No categories yet.</p></div></div>
+        <div className="admin-tablewrap"><AdminEmptyState icon="category" title="No categories yet" description="Add a category before creating products so visitors can browse the catalog." /></div>
       ) : (
         <div className="admin-tablewrap" style={{ marginTop: '1rem' }}>
           <table className="admin-table">
@@ -111,20 +122,20 @@ export default function AdminCategoriesPage() {
                 return (
                   <tr key={c.id}>
                     <td data-label="Name">
-                      {ed ? <input type="text" value={ed.name} onChange={(e) => setEditing((p) => ({ ...p, [c.id]: { ...p[c.id], name: e.target.value } }))} /> : c.name}
+                      {ed ? <><input type="text" value={ed.name} onChange={(e) => { setEditing((p) => ({ ...p, [c.id]: { ...p[c.id], name: e.target.value } })); setEditErrors((p) => ({ ...p, [c.id]: { ...p[c.id], name: undefined } })); }} aria-invalid={!!editErrors[c.id]?.name} />{editErrors[c.id]?.name && <span className="admin-field__error">{editErrors[c.id]?.name}</span>}</> : c.name}
                     </td>
                     <td data-label="Slug">
-                      {ed ? <input type="text" value={ed.slug} onChange={(e) => setEditing((p) => ({ ...p, [c.id]: { ...p[c.id], slug: slugify(e.target.value) } }))} /> : c.slug}
+                      {ed ? <><input type="text" value={ed.slug} onChange={(e) => { setEditing((p) => ({ ...p, [c.id]: { ...p[c.id], slug: slugify(e.target.value) } })); setEditErrors((p) => ({ ...p, [c.id]: { ...p[c.id], slug: undefined } })); }} aria-invalid={!!editErrors[c.id]?.slug} />{editErrors[c.id]?.slug && <span className="admin-field__error">{editErrors[c.id]?.slug}</span>}</> : c.slug}
                     </td>
-                    <td data-label="Products">{counts[c.id] ?? 0}</td>
+                    <td data-label="Products"><span>{counts[c.id] ?? 0}</span>{inUse && <span className="admin-field__hint">used by {counts[c.id]} product{counts[c.id] === 1 ? '' : 's'}</span>}</td>
                     <td data-label="Actions" className="admin-table__actions--icon">
                       <div className="admin-table__action-group">
                         {ed ? <>
-                          <button type="button" className="admin-btn admin-btn--ghost" onClick={() => saveEdit(c.id)} disabled={busy}><Icon>save</Icon></button>
-                          <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setEditing((p) => { const n = { ...p }; delete n[c.id]; return n; })} disabled={busy}><Icon>close</Icon></button>
+                          <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip="Save category" title="Save category" onClick={() => saveEdit(c.id)} disabled={busy} aria-label={`Save ${c.name}`}><Icon>save</Icon></button>
+                          <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip="Cancel editing" title="Cancel editing" onClick={() => setEditing((p) => { const n = { ...p }; delete n[c.id]; return n; })} disabled={busy} aria-label={`Cancel editing ${c.name}`}><Icon>close</Icon></button>
                         </> : <>
-                          <button type="button" className="admin-btn admin-btn--ghost" onClick={() => setEditing((p) => ({ ...p, [c.id]: { name: c.name, slug: c.slug } }))}><Icon>edit</Icon></button>
-                          <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip={inUse ? 'Remove products first' : 'Delete category'} aria-label={inUse ? 'Remove products first' : `Delete ${c.name}`} onClick={() => setToDelete(c)} disabled={inUse}><Icon>delete</Icon></button>
+                          <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip="Edit category" title={`Edit ${c.name}`} onClick={() => setEditing((p) => ({ ...p, [c.id]: { name: c.name, slug: c.slug } }))} aria-label={`Edit ${c.name}`}><Icon>edit</Icon></button>
+                          <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip={inUse ? 'Remove products first' : 'Delete category'} title={inUse ? 'Remove products first' : `Delete ${c.name}`} aria-label={inUse ? 'Remove products first' : `Delete ${c.name}`} onClick={() => setToDelete(c)} disabled={inUse}><Icon>delete</Icon></button>
                         </>}
                       </div>
                     </td>

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Icon from '@/components/Icon';
+import AdminPageHead from '@/components/admin/AdminPageHead';
+import AdminEmptyState from '@/components/admin/AdminEmptyState';
 import { AdminProduct, AdminCategory, listProducts, listCategories } from '@/lib/admin/queries';
 
 export default function AdminDashboard() {
@@ -50,21 +52,20 @@ export default function AdminDashboard() {
   return (
     <div className="flex flex-col gap-8 pb-10">
       {/* Page Header */}
-      <div className="admin-pagehead admin-pagehead--dashboard">
-        <div>
-          <span className="admin-pagehead__eyebrow">Good to see you</span>
-          <h1>Dashboard</h1>
-          <p>One calm place to keep your catalog and storefront in shape.</p>
-        </div>
-        <div className="admin-pagehead__actions">
-          <Link href="/en/" className="admin-btn admin-btn--outline">
+      <AdminPageHead
+        className="admin-pagehead--dashboard"
+        eyebrow="Good to see you"
+        title="Dashboard"
+        description="One calm place to keep your catalog and storefront in shape."
+        actions={<>
+          <Link href="/en/" target="_blank" rel="noreferrer" className="admin-btn admin-btn--outline">
             <Icon>open_in_new</Icon> View storefront
           </Link>
           <Link href="/admin/products/new/" className="admin-btn admin-btn--dark">
             <Icon>add</Icon> New product
           </Link>
-        </div>
-      </div>
+        </>}
+      />
 
       {/* Welcome Hero */}
       <section className="admin-welcome">
@@ -144,13 +145,12 @@ export default function AdminDashboard() {
 
           <div className="admin-tablewrap">
             {recent.length === 0 ? (
-              <div className="admin-empty">
-                <Icon>inventory_2</Icon>
-                <p>Your catalog is empty.</p>
-                <Link href="/admin/products/new/" className="admin-text-link">
-                  Create your first product <Icon>arrow_forward</Icon>
-                </Link>
-              </div>
+              <AdminEmptyState
+                icon="inventory_2"
+                title="Your catalog is empty"
+                description="Add the first piece to start building your storefront."
+                action={<Link href="/admin/products/new/" className="admin-btn admin-btn--outline"><Icon>add</Icon> Create product</Link>}
+              />
             ) : (
               <table className="admin-table">
                 <thead>
@@ -190,7 +190,7 @@ export default function AdminDashboard() {
                       </td>
                       <td data-label="" className="admin-table__actions--icon">
                         <div className="admin-table__action-group">
-                          <Link href={`/admin/products/edit/?id=${p.id}`} className="admin-btn admin-btn--ghost" aria-label={`Edit ${p.title}`}>
+                          <Link href={`/admin/products/edit/?id=${p.id}`} className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip="Edit product" title={`Edit ${p.title}`} aria-label={`Edit ${p.title}`}>
                             <Icon>edit</Icon>
                           </Link>
                         </div>

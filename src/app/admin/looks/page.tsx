@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
 import Select from '@/components/Select';
+import AdminPageHead from '@/components/admin/AdminPageHead';
 import { useToast, Toast } from '@/components/admin/Toast';
 import { Confirm } from '@/components/admin/Confirm';
 import {
@@ -34,7 +35,10 @@ export default function AdminLooksPage() {
     }
   }, [err]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void load(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
   const save = async (input: LookInput) => {
     setBusy(true);
@@ -66,13 +70,12 @@ export default function AdminLooksPage() {
 
   return (
     <>
-      <div className="admin-pagehead">
-        <div>
-          <div className="admin-breadcrumb"><Icon>collections</Icon> Homepage content</div>
-          <h1>Curated Looks</h1>
-          <p>Build editorial looks with up to two photos and tappable product hotspots.</p>
-        </div>
-      </div>
+      <AdminPageHead
+        breadcrumbs={[{ label: 'Dashboard', href: '/admin/' }, { label: 'Curated looks' }]}
+        eyebrow="Content & visuals"
+        title="Curated looks"
+        description="Build editorial looks with up to two photos and tappable product hotspots."
+      />
 
       <div className="admin-guide" aria-label="Look workflow">
         <div><span>01</span><strong>Add photos</strong><small>Use one or two lifestyle images.</small></div>
@@ -142,6 +145,7 @@ function LookCard({ initial, isNew, slotNumber, busy, productOptions, onSave, on
   }));
   const [activeImage, setActiveImage] = useState(0);
   const [uploading, setUploading] = useState<number | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; image?: string }>({});
   const fileRefs = useRef<Array<HTMLInputElement | null>>([]);
   const set = (patch: Partial<Draft>) => setD((prev) => ({ ...prev, ...patch }));
 
@@ -194,8 +198,9 @@ function LookCard({ initial, isNew, slotNumber, busy, productOptions, onSave, on
   return (
     <form className="admin-section admin-look-card" noValidate onSubmit={(e) => {
       e.preventDefault();
-      if (!d.title.trim()) return onError('Add a title for this look.');
-      if (!d.image_url) return onError('Upload the primary look image first.');
+      const nextErrors = { title: d.title.trim() ? undefined : 'A look title is required.', image: d.image_url ? undefined : 'Upload a primary look image.' };
+      setFieldErrors(nextErrors);
+      if (nextErrors.title || nextErrors.image) return;
       onSave({ id: isNew ? undefined : d.id, title: d.title, image_url: d.image_url, image_url_2: d.image_url_2, is_active: d.is_active, display_order: d.display_order, spots: d.spots });
     }}>
       <div className="admin-cardhead">
@@ -209,7 +214,8 @@ function LookCard({ initial, isNew, slotNumber, busy, productOptions, onSave, on
       <div className="admin-fieldrow">
         <label className="admin-field">
           <span className="admin-field__label">Title</span>
-          <input type="text" value={d.title} onChange={(e) => set({ title: e.target.value })} placeholder="The daily carry" />
+          <input type="text" value={d.title} onChange={(e) => { set({ title: e.target.value }); setFieldErrors((previous) => ({ ...previous, title: undefined })); }} placeholder="The daily carry" aria-invalid={!!fieldErrors.title} aria-describedby={fieldErrors.title ? 'look-title-error' : undefined} />
+          {fieldErrors.title && <span className="admin-field__error" id="look-title-error">{fieldErrors.title}</span>}
         </label>
         <label className="admin-field admin-field--compact">
           <span className="admin-field__label">Display order</span>
@@ -218,7 +224,7 @@ function LookCard({ initial, isNew, slotNumber, busy, productOptions, onSave, on
         </label>
       </div>
 
-      <div className="admin-field">
+        <div className="admin-field" aria-invalid={!!fieldErrors.image}>
         <div className="admin-field__rowlabel"><span className="admin-field__label">Look photos</span><span className="admin-field__hint">Up to 2 images · JPG, PNG, or WebP</span></div>
         <div className="admin-look-media-grid">
           {images.map((url, imageIndex) => (
@@ -229,14 +235,15 @@ function LookCard({ initial, isNew, slotNumber, busy, productOptions, onSave, on
               <div className="admin-look-media__footer">
                 <span>Image {imageIndex + 1}{imageIndex === 0 ? ' · Primary' : ' · Optional'}</span>
                 <div>
-                  {url && <button type="button" className="admin-btn admin-btn--ghost" onClick={() => removeImage(imageIndex)} disabled={uploading !== null} aria-label={`Remove image ${imageIndex + 1}`}><Icon>delete</Icon></button>}
-                  <button type="button" className="admin-btn admin-btn--ghost" onClick={() => fileRefs.current[imageIndex]?.click()} disabled={uploading !== null} aria-label={`${url ? 'Replace' : 'Upload'} image ${imageIndex + 1}`}><Icon>{uploading === imageIndex ? 'progress_activity' : url ? 'swap_horiz' : 'upload'}</Icon></button>
+                  {url && <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip="Remove image" title={`Remove image ${imageIndex + 1}`} onClick={() => removeImage(imageIndex)} disabled={uploading !== null} aria-label={`Remove image ${imageIndex + 1}`}><Icon>delete</Icon></button>}
+                  <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip={url ? 'Replace image' : 'Upload image'} title={`${url ? 'Replace' : 'Upload'} image ${imageIndex + 1}`} onClick={() => fileRefs.current[imageIndex]?.click()} disabled={uploading !== null} aria-label={`${url ? 'Replace' : 'Upload'} image ${imageIndex + 1}`}><Icon>{uploading === imageIndex ? 'progress_activity' : url ? 'swap_horiz' : 'upload'}</Icon></button>
                 </div>
               </div>
               <input ref={(node) => { fileRefs.current[imageIndex] = node; }} type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => onFile(e.target.files?.[0], imageIndex)} hidden />
             </div>
           ))}
         </div>
+        {fieldErrors.image && <span className="admin-field__error">{fieldErrors.image}</span>}
       </div>
 
       <div className="admin-hotspot-header">
@@ -257,7 +264,7 @@ function LookCard({ initial, isNew, slotNumber, busy, productOptions, onSave, on
               <span className="admin-hotspot-num">{i + 1}</span>
               <Select value={s.product_id ?? ''} onChange={(v) => setSpot(index, { product_id: v })} options={productOptions} />
               <span className="admin-hotspot-coord">{Math.round(s.x)}% · {Math.round(s.y)}%</span>
-              <button type="button" className="admin-btn admin-btn--ghost" onClick={() => removeSpot(index)} aria-label="Remove hotspot"><Icon>delete</Icon></button>
+              <button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip="Remove hotspot" title={`Remove hotspot ${index + 1}`} onClick={() => removeSpot(index)} aria-label={`Remove hotspot ${index + 1}`}><Icon>delete</Icon></button>
             </div>
           ))}
         </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
 import Select from '@/components/Select';
+import AdminPageHead from '@/components/admin/AdminPageHead';
 import { useToast, Toast } from '@/components/admin/Toast';
 import {
   AdminCategory, AdminImage, AdminVariant, STOCK_STATUSES,
@@ -13,6 +14,7 @@ import {
 
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const emptyVariant = (): AdminVariant => ({ sku: '', color_name: '', color_hex: '#8B4513', size_eu: '', image_url: '', stock_status: 'available' });
+const serializeProductForm = (input: { title: string; slug: string; description: string; leatherType: string; price: string; categoryId: string; featured: boolean; variants: AdminVariant[]; images: AdminImage[] }) => JSON.stringify({ ...input, variants: input.variants, images: input.images });
 
 export default function ProductForm({ productId }: { productId?: string }) {
   const router = useRouter();
@@ -34,6 +36,8 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [initialSnapshot, setInitialSnapshot] = useState<string | null>(() => productId ? null : serializeProductForm({ title: '', slug: '', description: '', leatherType: 'Full-Grain Cowhide', price: '', categoryId: '', featured: false, variants: [emptyVariant()], images: [] }));
+  const allowNavigationRef = useRef(false);
 
   useEffect(() => {
     listCategories().then(setCategories).catch((e) => err(e instanceof Error ? e.message : 'Categories failed.'));
@@ -47,10 +51,34 @@ export default function ProductForm({ productId }: { productId?: string }) {
         setFeatured(p.is_featured);
         setVariants(p.variants.length ? p.variants : [emptyVariant()]);
         setImages(p.images);
+        setInitialSnapshot(serializeProductForm({ title: p.title, slug: p.slug, description: p.description, leatherType: p.leather_type, price: String(p.base_price_usd), categoryId: p.category_id ?? '', featured: p.is_featured, variants: p.variants.length ? p.variants : [emptyVariant()], images: p.images }));
       })
       .catch((e) => err(e instanceof Error ? e.message : 'Load failed.'))
       .finally(() => setLoading(false));
   }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const currentSnapshot = useMemo(() => serializeProductForm({ title, slug, description, leatherType, price, categoryId, featured, variants, images }), [title, slug, description, leatherType, price, categoryId, featured, variants, images]);
+  const isDirty = !loading && initialSnapshot !== null && initialSnapshot !== currentSnapshot;
+
+  useEffect(() => {
+    if (!isDirty) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    const confirmNavigation = (event: MouseEvent) => {
+      if (allowNavigationRef.current) return;
+      const target = event.target instanceof Element ? event.target.closest('a') : null;
+      const href = target?.getAttribute('href');
+      if (!target || !href || href.startsWith('#') || target.getAttribute('target') === '_blank' || target.hasAttribute('download')) return;
+      if (!window.confirm('You have unsaved changes. Leave this product form?')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      } else {
+        allowNavigationRef.current = true;
+      }
+    };
+    window.addEventListener('beforeunload', beforeUnload);
+    document.addEventListener('click', confirmNavigation, true);
+    return () => { window.removeEventListener('beforeunload', beforeUnload); document.removeEventListener('click', confirmNavigation, true); };
+  }, [isDirty]);
 
   const onTitle = (v: string) => {
     setTitle(v);
@@ -113,6 +141,8 @@ export default function ProductForm({ productId }: { productId?: string }) {
         category_id: categoryId, variants: cleanVariants, images,
       });
       ok(productId ? 'Product updated.' : 'Product created.');
+      setInitialSnapshot(currentSnapshot);
+      allowNavigationRef.current = true;
       setTimeout(() => router.push('/admin/products/'), 450);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Save failed.';
@@ -126,15 +156,22 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
   return (
     <>
-      <div className="admin-pagehead">
-        <div>
-          <h1>{productId ? 'Edit product' : 'New product'}</h1>
-          <p><Link href="/admin/products/">← Back to products</Link></p>
-        </div>
-      </div>
+      <AdminPageHead
+        breadcrumbs={[{ label: 'Dashboard', href: '/admin/' }, { label: 'Products', href: '/admin/products/' }, { label: productId ? 'Edit product' : 'New product' }]}
+        eyebrow="Catalog"
+        title={productId ? 'Edit product' : 'New product'}
+        description={isDirty ? <span className="admin-dirty-status"><span className="admin-dirty-dot" /> Unsaved changes</span> : 'Keep the product details, variants, and images together in one place.'}
+        actions={<Link href="/admin/products/" className="admin-btn admin-btn--outline"><Icon>arrow_back</Icon> Back to products</Link>}
+      />
+
+      <nav className="admin-form-anchors" aria-label="Product form sections">
+        <a href="#details">Details</a>
+        <a href="#variants">Variants</a>
+        <a href="#images">Images</a>
+      </nav>
 
       <form className="admin-form" noValidate onSubmit={submit}>
-        <div className="admin-section" style={{ marginTop: 0 }}>
+        <div id="details" className="admin-section admin-form-section" style={{ marginTop: 0 }}>
           <h2>Details</h2>
           <div className="admin-fieldrow">
             <label className="admin-field">
@@ -172,7 +209,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
           </div>
         </div>
 
-        <div className="admin-section">
+        <div id="variants" className="admin-section admin-form-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2>Variants</h2>
             <button type="button" className="admin-btn admin-btn--outline" onClick={addVariant}><Icon>add</Icon> Add variant</button>
@@ -204,7 +241,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
                   onChange={(val) => setVariant(i, { image_url: val || '' })}
                   options={[{ value: '', label: '— Use default gallery —' }, ...images.map((img, idx) => {
                     const filename = img.image_url.split('/').pop()?.split('?')[0] || '';
-                    return { value: img.image_url, label: `Image ${idx + 1}${filename ? ` · ${filename}` : ''}` };
+                    return { value: img.image_url, label: `Image ${idx + 1}${filename ? ` · ${filename}` : ''}`, prefix: <img src={img.image_url} alt="" /> };
                   })]}
                 />
                 {v.image_url && <div className="admin-variant__image-preview"><img src={v.image_url} alt="" /><span>Selected image</span></div>}
@@ -215,12 +252,12 @@ export default function ProductForm({ productId }: { productId?: string }) {
                 <Select value={v.stock_status} onChange={(val) => setVariant(i, { stock_status: val as AdminVariant['stock_status'] })}
                   options={STOCK_STATUSES.map((s) => ({ value: s, label: s.replace('_', ' ') }))} />
               </div>
-              <button type="button" className="admin-btn admin-btn--ghost admin-variant__remove" onClick={() => removeVariant(i)} disabled={variants.length === 1} aria-label="Remove variant"><Icon>delete</Icon></button>
+              <button type="button" className="admin-btn admin-btn--ghost admin-tooltip admin-variant__remove" data-tooltip="Remove variant" title={`Remove variant ${i + 1}`} onClick={() => removeVariant(i)} disabled={variants.length === 1} aria-label={`Remove variant ${i + 1}`}><Icon>delete</Icon></button>
             </div>
           ))}
         </div>
 
-        <div className="admin-section">
+        <div id="images" className="admin-section admin-form-section">
           <h2>Images</h2>
           <p className="admin-field__hint">First image is the primary (card thumbnail). Drag to reorder isn’t supported — use the arrows.</p>
           <label
@@ -257,7 +294,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
         <div className="admin-sticky-actions">
           <button type="submit" className="admin-btn admin-btn--dark" disabled={saving}><Icon>save</Icon> {saving ? 'Saving…' : (productId ? 'Save changes' : 'Create product')}</button>
-          <Link href="/admin/products/" className="admin-btn admin-btn--outline">Cancel</Link>
+          <button type="button" className="admin-btn admin-btn--outline" onClick={() => { if (!isDirty || window.confirm('You have unsaved changes. Leave this product form?')) { allowNavigationRef.current = true; router.push('/admin/products/'); } }}>Cancel</button>
         </div>
       </form>
 

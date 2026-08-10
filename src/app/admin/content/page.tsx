@@ -37,6 +37,7 @@ export default function AdminContentPage() {
   const [safeSchemaMissing, setSafeSchemaMissing] = useState(false);
   const [snapshotLabel, setSnapshotLabel] = useState('');
   const [restoreTarget, setRestoreTarget] = useState<AdminContentSnapshot | null>(null);
+  const [savedDraft, setSavedDraft] = useState<SiteContent | null>(null);
   const { toast, ok, err, clear } = useToast();
 
   const load = useCallback(async () => {
@@ -52,6 +53,7 @@ export default function AdminContentPage() {
         };
       }
       setDraft(next);
+      setSavedDraft(next);
       try {
         const rows = await listContentSnapshots(locale);
         setSnapshots(rows);
@@ -79,6 +81,7 @@ export default function AdminContentPage() {
     try {
       await saveSiteContent(locale, section, draft[section]);
       if (section === 'global') await syncGlobalBrand(draft.global.brand);
+      setSavedDraft((previous) => ({ ...(previous ?? draft), [section]: draft[section] }));
       ok(`${SECTION_LABELS[section]} content saved.`);
     } catch (error) {
       err(error instanceof Error ? error.message : 'Content could not be saved.');
@@ -89,6 +92,13 @@ export default function AdminContentPage() {
 
   const updateSection = <K extends ContentSection>(key: K, value: SiteContent[K]) => {
     setDraft((previous) => ({ ...previous, [key]: value }));
+  };
+
+  const isSectionDirty = (key: ContentSection) => savedDraft !== null && JSON.stringify(draft[key]) !== JSON.stringify(savedDraft[key]);
+  const changeSection = (next: ContentSection) => {
+    if (next === section) return;
+    if (isSectionDirty(section) && !window.confirm(`The ${SECTION_LABELS[section]} section has unsaved changes. Switch sections and discard them?`)) return;
+    setSection(next);
   };
 
   const createSafeVersion = async () => {
@@ -149,7 +159,7 @@ export default function AdminContentPage() {
           <span className="admin-field__label">Editing language</span>
           <Select
             value={locale}
-            onChange={(value) => setLocale(value as Locale)}
+            onChange={(value) => { if (!isSectionDirty(section) || window.confirm(`The ${SECTION_LABELS[section]} section has unsaved changes. Change language and discard them?`)) setLocale(value as Locale); }}
             options={[{ value: 'en', label: 'English (EN)' }, { value: 'id', label: 'Bahasa Indonesia (ID)' }]}
           />
         </div>
@@ -165,7 +175,7 @@ export default function AdminContentPage() {
         {!safeSchemaMissing && snapshots.length > 0 && <ul className="admin-safe-version__history">
           {snapshots.map((snapshot) => <li key={snapshot.id}>
             <div className="admin-safe-version__meta"><Icon>history</Icon><div><strong>{snapshot.label || 'Untitled snapshot'}</strong><span>{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(snapshot.created_at))}</span></div></div>
-            <div className="admin-safe-version__row-actions"><button type="button" className="admin-btn admin-btn--dark" onClick={() => setRestoreTarget(snapshot)} disabled={safeBusy}><Icon>restore</Icon>Restore</button><button type="button" className="admin-btn admin-btn--ghost" onClick={() => removeSnapshot(snapshot)} disabled={safeBusy} aria-label="Delete snapshot"><Icon>delete</Icon></button></div>
+            <div className="admin-safe-version__row-actions"><button type="button" className="admin-btn admin-btn--dark" onClick={() => setRestoreTarget(snapshot)} disabled={safeBusy}><Icon>restore</Icon>Restore</button><button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip="Delete snapshot" title="Delete snapshot" onClick={() => removeSnapshot(snapshot)} disabled={safeBusy} aria-label="Delete snapshot"><Icon>delete</Icon></button></div>
           </li>)}
         </ul>}
       </section>
@@ -174,8 +184,8 @@ export default function AdminContentPage() {
         <aside className="admin-content-nav" aria-label="Content sections">
           <span className="admin-sidebar__group-label">Pages & areas</span>
           {CONTENT_SECTIONS.map((key) => (
-            <button type="button" key={key} className={section === key ? 'is-active' : ''} onClick={() => setSection(key)}>
-              <Icon>{sectionIcon(key)}</Icon><span>{SECTION_LABELS[key]}</span><Icon>chevron_right</Icon>
+            <button type="button" key={key} className={section === key ? 'is-active' : ''} onClick={() => changeSection(key)}>
+              <Icon>{sectionIcon(key)}</Icon><span>{SECTION_LABELS[key]}{isSectionDirty(key) && <span className="admin-dirty-dot" title="Unsaved changes" aria-label="Unsaved changes" />}</span><Icon>chevron_right</Icon>
             </button>
           ))}
         </aside>
@@ -380,7 +390,7 @@ function ImageField({ label, value, onChange, onError, contain = false }: { labe
 }
 
 function Repeater<T>({ items, render, onAdd, onRemove, addLabel }: { items: T[]; render: (item: T, index: number) => ReactNode; onAdd: () => void; onRemove: (index: number) => void; addLabel: string }) {
-  return <div className="admin-repeater">{items.map((item, index) => <div className="admin-repeater__item" key={index}><div className="admin-repeater__bar"><span>Item {String(index + 1).padStart(2, '0')}</span><button type="button" className="admin-btn admin-btn--ghost" onClick={() => onRemove(index)} aria-label={`Remove item ${index + 1}`}><Icon>delete</Icon></button></div>{render(item, index)}</div>)}<button type="button" className="admin-btn admin-btn--outline" onClick={onAdd}><Icon>add</Icon>{addLabel}</button></div>;
+  return <div className="admin-repeater">{items.map((item, index) => <div className="admin-repeater__item" key={index}><div className="admin-repeater__bar"><span>Item {String(index + 1).padStart(2, '0')}</span><button type="button" className="admin-btn admin-btn--ghost admin-tooltip" data-tooltip="Remove item" title={`Remove item ${index + 1}`} onClick={() => onRemove(index)} aria-label={`Remove item ${index + 1}`}><Icon>delete</Icon></button></div>{render(item, index)}</div>)}<button type="button" className="admin-btn admin-btn--outline" onClick={onAdd}><Icon>add</Icon>{addLabel}</button></div>;
 }
 
 function sectionIcon(section: ContentSection) {

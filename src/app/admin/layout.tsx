@@ -19,14 +19,15 @@ const NAV_GROUPS = [
     ]
   },
   {
-    label: 'Catalog Management',
+    label: 'Catalog management',
     items: [
       { href: '/admin/products/', label: 'Products', icon: 'inventory_2' },
       { href: '/admin/categories/', label: 'Categories', icon: 'category' },
+      { href: '/admin/collection/', label: 'Collections', icon: 'account_tree' },
     ]
   },
   {
-    label: 'Content & Visuals',
+    label: 'Content & visuals',
     items: [
       { href: '/admin/looks/', label: 'Curated Looks', icon: 'collections' },
       { href: '/admin/heroes/', label: 'Homepage Heroes', icon: 'photo_library' },
@@ -34,10 +35,9 @@ const NAV_GROUPS = [
     ]
   },
   {
-    label: 'Settings',
+    label: 'Store settings',
     items: [
-      { href: '/admin/collection/', label: 'Collections', icon: 'account_tree' },
-      { href: '/admin/stores/', label: 'Stores Location', icon: 'storefront' },
+      { href: '/admin/stores/', label: 'Store locations', icon: 'storefront' },
     ]
   }
 ];
