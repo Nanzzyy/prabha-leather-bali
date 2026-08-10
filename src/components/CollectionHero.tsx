@@ -4,12 +4,13 @@ import Image from 'next/image';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
 import LocaleLink from './LocaleLink';
 import Icon from './Icon';
+import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 
 export default function CollectionHero() {
   const { content } = useSiteContent();
   const hero = content.collection.hero;
   return <section className="collection-page__hero">
-    <Image className="collection-page__hero-image" src={hero.image.image_url} alt={hero.image.alt} fill priority sizes="100vw" />
+    <Image className="collection-page__hero-image" src={getSupabaseImageUrl(hero.image.image_url, { width: 1920, quality: 72 })} alt={hero.image.alt} fill priority sizes="100vw" />
     <div className="collection-page__hero-overlay" />
     <div className="collection-page__hero-content">
       <span className="eyebrow">{hero.eyebrow}</span>

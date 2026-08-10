@@ -1,9 +1,9 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { getDefaultContent, mergeSiteContent, type ContentSection, type SiteContent } from './defaults';
 import type { Lang } from '@/lib/i18n/dictionaries';
+import { fetchSupabaseRows } from '@/lib/supabase-rest';
 
 type SiteContentContextValue = { content: SiteContent; loading: boolean; unavailable: boolean };
 const SiteContentContext = createContext<SiteContentContextValue | null>(null);
@@ -15,11 +15,11 @@ const CONTENT_TTL = 60_000;
 const CONTENT_FETCH_CAP = 2000;
 
 export async function fetchLiveSiteContent(lang: Lang): Promise<Partial<Record<ContentSection, object>> | null> {
-  if (!supabase) return null;
-  const { data, error } = await supabase.from('site_content').select('section, content').eq('locale', lang);
-  if (error) throw error;
-  if (!data) return null;
-  return data.reduce<Partial<Record<ContentSection, object>>>((result, row) => {
+  const rows = await fetchSupabaseRows<{ section: string; content: object }>('site_content', {
+    select: 'section,content',
+    locale: `eq.${lang}`,
+  });
+  return rows.reduce<Partial<Record<ContentSection, object>>>((result, row) => {
     result[row.section as ContentSection] = row.content as object;
     return result;
   }, {});

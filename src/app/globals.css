@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Loaded by the browser only when an icon is painted; this avoids the
+   render-blocking Google Fonts stylesheet while keeping the existing icon set. */
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/materialsymbolsoutlined/v364/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOem.ttf') format('truetype');
+}
+
 :root {
   --bone: #fcf9f3;
   --bone-deep: #f7f4ee;
@@ -23,7 +33,7 @@ button, input, textarea, select { font: inherit; }
 button { border: 0; cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .5; }
 img { max-width: 100%; }
-.material-symbols-outlined { font-size: 19px; line-height: 1; vertical-align: middle; font-variation-settings: 'FILL' 0, 'wght' 400; }
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-size: 19px; line-height: 1; vertical-align: middle; font-variation-settings: 'FILL' 0, 'wght' 400; }
 .eyebrow { display: block; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .18em; line-height: 1.4; text-transform: uppercase; }
 h1, h2, h3, h4, p { margin: 0; }
 h1, h2, h3, h4 { font-family: var(--serif); font-weight: 500; line-height: 1.04; }

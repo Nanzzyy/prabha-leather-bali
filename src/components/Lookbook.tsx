@@ -8,6 +8,7 @@ import { useCurrency } from '@/lib/currency/CurrencyContext';
 import { useLang } from '@/lib/i18n/LangContext';
 import { flyToPouch } from '@/lib/utils/flyToCart';
 import { fetchLiveLooks, type LiveLook } from '@/lib/catalog/live';
+import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 import { Product } from '@/lib/types/repository';
 import Icon from './Icon';
 import LocaleLink from './LocaleLink';
@@ -64,7 +65,7 @@ export default function Lookbook() {
             <div className={`look__media ${look.images.length > 1 ? 'look__media--pair' : ''}`}>
               {look.images.map((image, imageIndex) => (
                 <div className="look__panel" key={`${look.id}-${imageIndex}`}>
-                  <div className="look__panel-image"><Image src={image} alt={`Praba Leather — ${look.title}, image ${imageIndex + 1}`} fill sizes="(max-width: 760px) 100vw, 50vw" className="look__image" /></div>
+                  <div className="look__panel-image"><Image src={getSupabaseImageUrl(image, { width: 1400, quality: 72 })} alt={`Praba Leather — ${look.title}, image ${imageIndex + 1}`} fill sizes="(max-width: 760px) 100vw, 50vw" className="look__image" /></div>
                   {imageIndex === 0 && <span className="look__label">Look 0{index + 1} — {look.title}</span>}
                   {look.spots.filter((spot) => (spot.imageIndex ?? 0) === imageIndex).map((spot, i) => {
                     const key = `${look.id}-${imageIndex}-${i}`;
@@ -88,7 +89,7 @@ export default function Lookbook() {
                             <button type="button" className="look__card-close" onClick={() => setOpen(null)} aria-label={`Close ${spot.product.name}`}><Icon>close</Icon></button>
                             <div className="look__card-img">
                               {spot.product.images[0]
-                                ? <Image src={spot.product.images[0]} alt={spot.product.name} fill sizes="120px" />
+                                ? <Image src={getSupabaseImageUrl(spot.product.images[0], { width: 256, height: 256, quality: 70, resize: 'cover' })} alt={spot.product.name} fill sizes="120px" />
                                 : <span aria-hidden>{spot.product.name.charAt(0)}</span>}
                             </div>
                             <div className="look__card-body">

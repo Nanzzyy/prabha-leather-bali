@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabase';
 import { Product } from '@/lib/types/repository';
 import type { Store } from '@/components/ContactClient';
+import { fetchSupabaseRows } from '@/lib/supabase-rest';
 
 // Browser-side live catalog read (anon key, public SELECT). Mirrors the build-time
 // mapping in src/lib/repositories/index.ts so the storefront shape stays identical.
@@ -36,6 +36,7 @@ type LiveLookRow = { id: string; title: string; image_url: string; image_url_2?:
 // while revalidating in the background.
 type Holder<T> = { key: string; entry: { value: T; at: number } | null; inflight: Promise<T> | null };
 const productHolder: Holder<Product[] | null> = { key: 'praba:products', entry: null, inflight: null };
+const productDetailHolders = new Map<string, Holder<Product | null>>();
 const heroHolder: Holder<LiveHero[] | null> = { key: 'praba:heroes', entry: null, inflight: null };
 const storeHolder: Holder<Store[] | null> = { key: 'praba:stores', entry: null, inflight: null };
 const lookHolder: Holder<LiveLook[] | null> = { key: 'praba:looks', entry: null, inflight: null };
@@ -97,7 +98,6 @@ export function mapLiveProductRow(row: LiveProductRow): Product {
 }
 
 export async function fetchLiveProducts(fresh = false): Promise<Product[] | null> {
-  if (!supabase) return null;
   if (fresh) {
     productHolder.entry = null;
     if (typeof window !== 'undefined') {
@@ -106,9 +106,8 @@ export async function fetchLiveProducts(fresh = false): Promise<Product[] | null
   }
   try {
     return await dedup(productHolder, LIVE_CACHE_TTL, async () => {
-      const { data, error } = await supabase!.from('products').select(SELECT).order('is_featured', { ascending: false });
-      if (error || !data || !data.length) return null;
-      return data.map(mapLiveProductRow);
+      const data = await fetchSupabaseRows<LiveProductRow>('products', { select: SELECT, order: 'is_featured.desc' });
+      return data.length ? data.map(mapLiveProductRow) : null;
     });
   } catch {
     return null;
@@ -116,14 +115,13 @@ export async function fetchLiveProducts(fresh = false): Promise<Product[] | null
 }
 
 export async function fetchLiveProductBySlug(slug: string): Promise<Product | null> {
-  if (!supabase) return null;
-  const { data, error } = await supabase
-    .from('products')
-    .select(SELECT)
-    .eq('slug', slug)
-    .maybeSingle();
-  if (error || !data) return null;
-  return mapLiveProductRow(data);
+  const key = `praba:product:${slug}`;
+  const holder = productDetailHolders.get(slug) ?? { key, entry: null, inflight: null };
+  productDetailHolders.set(slug, holder);
+  return dedup(holder, LIVE_CACHE_TTL, async () => {
+    const data = await fetchSupabaseRows<LiveProductRow>('products', { select: SELECT, slug: `eq.${slug}`, limit: '1' });
+    return data[0] ? mapLiveProductRow(data[0]) : null;
+  });
 }
 
 // --- Phase 2 content: heroes, looks, stores -------------------------------
@@ -131,12 +129,10 @@ export async function fetchLiveProductBySlug(slug: string): Promise<Product | nu
 export type LiveHero = { image_url: string; alt_text: string; caption: string };
 
 export async function fetchLiveHeroes(): Promise<LiveHero[] | null> {
-  if (!supabase) return null;
   try {
     return await dedup(heroHolder, LIVE_CACHE_TTL, async () => {
-      const { data, error } = await supabase!.from('hero_images').select('image_url, alt_text, caption').eq('is_active', true).order('display_order');
-      if (error || !data || !data.length) return null;
-      return data.map((r) => ({ image_url: r.image_url, alt_text: r.alt_text ?? 'Editorial view of handcrafted leather', caption: r.caption ?? '' }));
+      const data = await fetchSupabaseRows<{ image_url: string; alt_text?: string | null; caption?: string | null }>('hero_images', { select: 'image_url,alt_text,caption', is_active: 'eq.true', order: 'display_order.asc' });
+      return data.length ? data.map((r) => ({ image_url: r.image_url, alt_text: r.alt_text ?? 'Editorial view of handcrafted leather', caption: r.caption ?? '' })) : null;
     });
   } catch {
     return null;
@@ -144,11 +140,10 @@ export async function fetchLiveHeroes(): Promise<LiveHero[] | null> {
 }
 
 export async function fetchLiveStores(): Promise<Store[] | null> {
-  if (!supabase) return null;
   try {
     return await dedup(storeHolder, LIVE_CACHE_TTL, async () => {
-      const { data, error } = await supabase!.from('stores').select('name, address, phone, phone_href, email, hours, map_query').eq('is_active', true).order('display_order');
-      if (error || !data || !data.length) return null;
+      const data = await fetchSupabaseRows<{ name: string; address?: string | null; phone?: string | null; phone_href?: string | null; email?: string | null; hours?: string | null; map_query?: string | null }>('stores', { select: 'name,address,phone,phone_href,email,hours,map_query', is_active: 'eq.true', order: 'display_order.asc' });
+      if (!data.length) return null;
       return data.map((r) => ({
         name: r.name, address: r.address ?? '', phone: r.phone ?? '', phoneHref: r.phone_href ?? '',
         email: r.email ?? '', hours: r.hours ?? '', mapQuery: r.map_query ?? '',
@@ -162,12 +157,10 @@ export async function fetchLiveStores(): Promise<Store[] | null> {
 export interface LiveLook { id: string; image: string; images: string[]; title: string; displayOrder: number; spots: { product: Product; x: number; y: number; imageIndex: number }[]; }
 
 export async function fetchLiveLooks(): Promise<LiveLook[] | null> {
-  if (!supabase) return null;
   try {
     return await dedup(lookHolder, LIVE_CACHE_TTL, async () => {
-      const { data, error } = await supabase!.from('looks').select(`id, title, image_url, image_url_2, display_order, is_active, look_spots(id, x, y, image_index, display_order, products(${LOOK_PRODUCT_SELECT}))`).eq('is_active', true).order('display_order');
-      if (error || !data || !data.length) return null;
-      const rows = data as unknown as LiveLookRow[];
+      const rows = await fetchSupabaseRows<LiveLookRow>('looks', { select: `id,title,image_url,image_url_2,display_order,is_active,look_spots(id,x,y,image_index,display_order,products(${LOOK_PRODUCT_SELECT}))`, is_active: 'eq.true', order: 'display_order.asc' });
+      if (!rows.length) return null;
       return rows.map((row) => {
         const images = [row.image_url, row.image_url_2].filter((image): image is string => Boolean(image));
         return {

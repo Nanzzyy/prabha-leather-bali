@@ -4,11 +4,12 @@ import Image from 'next/image';
 import Icon from '@/components/Icon';
 import Carousel from '@/components/Carousel';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
+import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 
 type PhotoProps = { src?: string; alt: string; label?: string; icon?: string; className?: string };
 
 function Photo({ src, alt, label = '', icon = 'image', className = '' }: PhotoProps) {
-  if (src) return <figure className={`about-photo ${className}`}><Image src={src} alt={alt} fill sizes="(max-width: 900px) 100vw, 50vw" className="about-photo__img" /></figure>;
+  if (src) return <figure className={`about-photo ${className}`}><Image src={getSupabaseImageUrl(src, { width: 1200, quality: 74 })} alt={alt} fill sizes="(max-width: 900px) 100vw, 50vw" className="about-photo__img" /></figure>;
   return <figure className={`about-photo about-photo--placeholder ${className}`} aria-label={alt}><span className="material-symbols-outlined" aria-hidden>{icon}</span><span className="about-photo__label">{label}</span></figure>;
 }
 

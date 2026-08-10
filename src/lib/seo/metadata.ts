@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getDefaultContent, mergeSiteContent, type SeoPageKey, type SiteSeo } from '@/lib/content/defaults';
 import { isValidLang, type Lang } from '@/lib/i18n/dictionaries';
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase-config';
+import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 
 const FALLBACK_SITE_URL = 'https://prabaleather.com';
 
@@ -19,8 +20,11 @@ export function getCanonicalSiteUrl(seo: SiteSeo) {
   return normalizeSiteUrl(seo.canonicalUrl);
 }
 
-function absoluteAssetUrl(value: string, siteUrl: string) {
-  try { return new URL(value, `${siteUrl}/`).toString(); } catch { return `${siteUrl}/praba-logo.svg`; }
+function absoluteAssetUrl(value: string, siteUrl: string, optimize = true) {
+  try {
+    const absolute = new URL(value, `${siteUrl}/`).toString();
+    return optimize ? (getSupabaseImageUrl(absolute, { width: 1200, quality: 78 }) ?? absolute) : absolute;
+  } catch { return `${siteUrl}/praba-logo.svg`; }
 }
 
 function parseRobots(value: string) {
@@ -60,7 +64,7 @@ export function buildMetadata(seo: SiteSeo, lang: Lang, page: SeoPageKey, path: 
   const robots = parseRobots(seo.robots);
   const ogImage = absoluteAssetUrl(seo.ogImage.image_url, siteUrl);
   const twitterImage = absoluteAssetUrl(seo.twitterImage.image_url || seo.ogImage.image_url, siteUrl);
-  const favicon = absoluteAssetUrl(seo.favicon.image_url, siteUrl);
+  const favicon = absoluteAssetUrl(seo.favicon.image_url, siteUrl, false);
 
   return {
     metadataBase: new URL(`${siteUrl}/`),

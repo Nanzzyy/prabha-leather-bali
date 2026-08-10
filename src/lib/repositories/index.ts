@@ -2,6 +2,7 @@ import { IProductRepository } from '../types/repository';
 import { catalogProducts } from '../data/catalog';
 import { supabase } from '../supabase';
 import { PostgresAdapter } from './PostgresAdapter';
+import { unstable_cache } from 'next/cache';
 
 // Singleton instance to avoid multiple DB connections in dev
 let repositoryInstance: IProductRepository | null = null;
@@ -29,7 +30,7 @@ export function getProductRepository(): IProductRepository {
   return repositoryInstance;
 }
 
-export async function getCatalogProducts() {
+async function getCatalogProductsUncached() {
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -67,6 +68,20 @@ export async function getCatalogProducts() {
 
   const databaseProducts = await getProductRepository().getAllProducts();
   return databaseProducts.length ? databaseProducts : catalogProducts;
+}
+
+// The catalog is public and identical for every visitor. Keep one server-side
+// result for a short window so every static/SSR page does not repeat the same
+// full relational read. CMS edits become visible after the revalidation window
+// without changing the existing fallback behavior.
+const getCachedCatalogProducts = unstable_cache(
+  getCatalogProductsUncached,
+  ['public-catalog-products'],
+  { revalidate: 60, tags: ['public-catalog-products'] },
+);
+
+export async function getCatalogProducts() {
+  return getCachedCatalogProducts();
 }
 
 export async function getCatalogProductBySlug(slug: string) {

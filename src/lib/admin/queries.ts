@@ -1,4 +1,5 @@
 import { adminSupabase, STORAGE_BUCKET } from '@/lib/supabase-admin';
+import { compressImageForUpload } from '@/lib/admin/image-compression';
 import type { ContentSection, SiteContent } from '@/lib/content/defaults';
 
 // Single seam for all CMS read/write logic. Every function assumes an admin
@@ -346,10 +347,14 @@ export async function deleteContentSnapshot(id: string): Promise<void> {
 
 export async function uploadImage(file: File, folder = 'products'): Promise<AdminImage> {
   const sb = requireClient();
-  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const uploadFile = await compressImageForUpload(file);
+  const ext = uploadFile.name.split('.').pop()?.toLowerCase() || 'jpg';
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, {
-    contentType: file.type || `image/${ext}`,
+  const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, uploadFile, {
+    contentType: uploadFile.type || `image/${ext}`,
+    // Uploaded paths are UUID-based and never overwritten, so a long browser
+    // cache is safe and prevents repeat downloads of immutable assets.
+    cacheControl: '31536000',
     upsert: false,
   });
   if (error) throw error;

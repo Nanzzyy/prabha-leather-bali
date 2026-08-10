@@ -1,9 +1,6 @@
-import { supabase } from '@/lib/supabase';
-import { mapLiveProductRow } from '@/lib/catalog/live';
-import { normalizeCollectionSubcategory, type CollectionSubcategory } from '@/lib/content/defaults';
+import { fetchLiveProducts } from '@/lib/catalog/live';
 import type { Product } from '@/lib/types/repository';
-
-const PRODUCT_SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
+import { fetchSupabaseRows } from '@/lib/supabase-rest';
 
 export type CollectionProductGroup = {
   categoryId: string;
@@ -15,8 +12,8 @@ export type CollectionProductGroup = {
 type RawCollectionProductGroup = {
   category_id: string;
   subcategory_slug: string;
+  product_id: string;
   categories: { slug: string } | { slug: string }[] | null;
-  products: unknown | unknown[] | null;
 };
 
 const GROUP_CACHE_TTL = 60_000;
@@ -33,7 +30,6 @@ function readStoredGroups() {
 }
 
 export async function fetchLiveCollectionProductGroups(): Promise<CollectionProductGroup[] | null> {
-  if (!supabase) return null;
   if (!groupHolder.entry) {
     const stored = readStoredGroups();
     if (stored) groupHolder.entry = stored;
@@ -41,18 +37,25 @@ export async function fetchLiveCollectionProductGroups(): Promise<CollectionProd
   if (groupHolder.entry && Date.now() - groupHolder.entry.at < GROUP_CACHE_TTL) return groupHolder.entry.value;
   if (groupHolder.inflight) return groupHolder.inflight;
   groupHolder.inflight = (async () => {
-    const { data, error } = await supabase!.from('collection_product_groups')
-      .select(`category_id, subcategory_slug, display_order, categories!collection_product_groups_category_id_fkey(slug), products(${PRODUCT_SELECT})`)
-      .order('display_order');
-    if (error || !data) return [];
+    // Product data is already cached by the catalog reader. Returning only the
+    // foreign key here avoids repeating gallery URLs and variants once per
+    // collection assignment.
+    const [data, products] = await Promise.all([
+      fetchSupabaseRows<RawCollectionProductGroup>('collection_product_groups', {
+        select: 'category_id,subcategory_slug,display_order,product_id,categories!collection_product_groups_category_id_fkey(slug)',
+        order: 'display_order.asc',
+      }),
+      fetchLiveProducts(),
+    ]);
+    const productsById = new Map((products ?? []).map((product) => [product.id, product]));
     const groups = new Map<string, CollectionProductGroup>();
-    for (const row of data as unknown as RawCollectionProductGroup[]) {
+    for (const row of data) {
       const category = Array.isArray(row.categories) ? row.categories[0] : row.categories;
-      const product = Array.isArray(row.products) ? row.products[0] : row.products;
+      const product = productsById.get(row.product_id);
       if (!category?.slug || !product) continue;
       const key = `${category.slug}:${row.subcategory_slug}`;
       const group: CollectionProductGroup = groups.get(key) ?? { categoryId: row.category_id, categorySlug: category.slug, subcategorySlug: row.subcategory_slug, products: [] };
-      group.products.push(mapLiveProductRow(product));
+      group.products.push(product);
       groups.set(key, group);
     }
     const value = [...groups.values()];
@@ -66,8 +69,4 @@ export async function fetchLiveCollectionProductGroups(): Promise<CollectionProd
   } catch {
     return null;
   }
-}
-
-export function collectionSubcategorySlug(value: CollectionSubcategory | string) {
-  return normalizeCollectionSubcategory(value).slug;
 }

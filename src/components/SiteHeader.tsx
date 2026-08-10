@@ -1,15 +1,17 @@
 'use client';
 
 import { FormEvent, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, usePathname } from 'next/navigation';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useCurrency } from '@/lib/currency/CurrencyContext';
 import { stripLocale, useLang } from '@/lib/i18n/LangContext';
-import CollectionMegaMenu from './CollectionMegaMenu';
 import Icon from './Icon';
 import LocaleLink from './LocaleLink';
 import LocaleSwitch from './LocaleSwitch';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
+
+const CollectionMegaMenu = dynamic(() => import('./CollectionMegaMenu'), { ssr: false });
 
 const navLinks = [
   { key: 'nav.home', href: '/' },

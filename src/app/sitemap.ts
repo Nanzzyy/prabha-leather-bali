@@ -3,6 +3,7 @@ import { getDefaultContent } from '@/lib/content/defaults';
 import { LANGS } from '@/lib/i18n/dictionaries';
 import { getCatalogProducts } from '@/lib/repositories';
 import { getCanonicalSiteUrl, getLiveSeo } from '@/lib/seo/metadata';
+import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 
 export const revalidate = 3600;
 
@@ -23,8 +24,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     Promise.resolve(getDefaultContent('en').collection.items),
   ]);
   for (const lang of LANGS) {
-    for (const product of products) urls.push({ url: `${siteUrl}/${lang}/catalog/${product.slug}/`, lastModified: now, changeFrequency: 'weekly', priority: 0.7, images: product.images.slice(0, 3) });
-    for (const collection of collections) urls.push({ url: `${siteUrl}/${lang}/collection/${collection.slug}/`, lastModified: now, changeFrequency: 'monthly', priority: 0.7, images: collection.image_url ? [collection.image_url] : undefined });
+    for (const product of products) urls.push({ url: `${siteUrl}/${lang}/catalog/${product.slug}/`, lastModified: now, changeFrequency: 'weekly', priority: 0.7, images: product.images.slice(0, 3).map((image) => getSupabaseImageUrl(image, { width: 1200, quality: 78 }) ?? image) });
+    for (const collection of collections) urls.push({ url: `${siteUrl}/${lang}/collection/${collection.slug}/`, lastModified: now, changeFrequency: 'monthly', priority: 0.7, images: collection.image_url ? [getSupabaseImageUrl(collection.image_url, { width: 1200, quality: 78 }) ?? collection.image_url] : undefined });
   }
   return urls;
 }

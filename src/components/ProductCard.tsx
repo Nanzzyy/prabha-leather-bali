@@ -6,6 +6,7 @@ import { useCartStore } from '@/lib/store/cartStore';
 import { useCurrency } from '@/lib/currency/CurrencyContext';
 import { useLang } from '@/lib/i18n/LangContext';
 import { flyToPouch } from '@/lib/utils/flyToCart';
+import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 import Icon from './Icon';
 import LocaleLink from './LocaleLink';
 
@@ -31,9 +32,9 @@ export default function ProductCard({ product, compact = false, showOrderAction 
     <article className={`product-card ${compact ? 'product-card--compact' : ''}`}>
       <LocaleLink href={`/catalog/${product.slug}/`} className="product-card__media" ariaLabel={`View ${product.name}`}>
         {product.images[0]
-          ? <Image src={product.images[0]} alt={product.name} fill sizes="(max-width: 768px) 100vw, 25vw" className="product-card__image product-card__image--primary" />
+          ? <Image src={getSupabaseImageUrl(product.images[0], { width: 640, height: 800, quality: 74, resize: 'cover' })} alt={product.name} fill sizes="(max-width: 768px) 100vw, 25vw" className="product-card__image product-card__image--primary" />
           : <span className="product-card__image product-card__image--placeholder" aria-hidden>{product.name.charAt(0)}</span>}
-        {product.images[1] && <Image src={product.images[1]} alt="" fill sizes="(max-width: 768px) 100vw, 25vw" className="product-card__image product-card__image--swap" />}
+        {product.images[1] && <Image src={getSupabaseImageUrl(product.images[1], { width: 640, height: 800, quality: 74, resize: 'cover' })} alt="" fill sizes="(max-width: 768px) 100vw, 25vw" className="product-card__image product-card__image--swap" />}
         {product.isFeatured && <span className="product-card__badge">Featured</span>}
         <span className="product-card__view">{t('cta.viewPiece')} <Icon>arrow_outward</Icon></span>
       </LocaleLink>

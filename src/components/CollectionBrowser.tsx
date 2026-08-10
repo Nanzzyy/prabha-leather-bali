@@ -10,6 +10,7 @@ import { fetchLiveCollectionProductGroups, type CollectionProductGroup } from '@
 import { fetchLiveProducts } from '@/lib/catalog/live';
 import { buildSubcategoryAssignments, subcategoriesFor } from '@/lib/catalog/subcategories';
 import type { Product } from '@/lib/types/repository';
+import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 
 interface Props {
   slug: string;
@@ -49,7 +50,7 @@ export default function CollectionBrowser({ slug, initialProducts }: Props) {
   return (
     <main className="collection-browser">
       <section className="collection-browser__hero">
-        <Image src={heroImage} alt={collection.title} fill priority sizes="100vw" />
+        <Image src={getSupabaseImageUrl(heroImage, { width: 1920, quality: 72 })} alt={collection.title} fill priority sizes="100vw" />
         <div className="collection-browser__hero-overlay" />
         <div className="collection-browser__hero-copy">
           <nav aria-label="Breadcrumb"><LocaleLink href="/collection/">Collection</LocaleLink><Icon>chevron_right</Icon><span>{collection.title}</span></nav>

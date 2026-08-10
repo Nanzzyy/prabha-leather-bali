@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
 import type { Product } from '@/lib/types/repository';
-import { fetchLiveProducts } from '@/lib/catalog/live';
 import LocaleLink from './LocaleLink';
 import ProductCard from './ProductCard';
 import TrustSection from './TrustSection';
@@ -22,9 +21,13 @@ export default function HomeEditorialSections({ featured }: { featured: Product[
   // Refresh the server prop from the CMS after the first paint. This is the only
   // product request on the homepage; the layout no longer warms every dataset.
   useEffect(() => {
-    fetchLiveProducts().then((products) => {
-      if (products) setLiveProducts(products);
-    }).catch(() => {});
+    const timer = window.setTimeout(() => {
+      import('@/lib/catalog/live')
+        .then(({ fetchLiveProducts }) => fetchLiveProducts())
+        .then((products) => { if (products) setLiveProducts(products); })
+        .catch(() => {});
+    }, 1800);
+    return () => window.clearTimeout(timer);
   }, []);
 
   const liveFeatured = liveProducts?.filter((product) => product.isFeatured) ?? [];

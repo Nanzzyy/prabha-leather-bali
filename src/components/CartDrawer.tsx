@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useCurrency } from '@/lib/currency/CurrencyContext';
@@ -47,7 +48,7 @@ export default function CartDrawer() {
           {items.length === 0 ? <div className="cart-empty"><Icon>shopping_bag</Icon><h3>{labels.emptyTitle}</h3><p>{labels.emptyBody}</p><button className="button button--dark" type="button" onClick={closeCart}>{labels.exploreCatalog}</button></div> : <>
             <div className="cart-items">
               {items.map((item) => <div className="cart-item" key={item.id}>
-                <div className="cart-item__image">{item.product.images[0] && <Image src={item.product.images[0]} alt={item.product.name} fill sizes="96px" />}</div>
+                <div className="cart-item__image">{item.product.images[0] && <Image src={getSupabaseImageUrl(item.product.images[0], { width: 256, height: 256, quality: 70, resize: 'cover' })} alt={item.product.name} fill sizes="96px" />}</div>
                 <div className="cart-item__body"><div className="cart-item__title"><h3>{item.product.name}</h3><button type="button" onClick={() => removeItem(item.id)} aria-label={`Remove ${item.product.name}`}><Icon>delete</Icon></button></div><p>{item.variant.size ? `Size: EU ${item.variant.size}` : ''}{item.variant.size && ' · '}{item.variant.color}</p>{item.customEmboss && <p>Custom stamp: “{item.customEmboss}”</p>}<div className="cart-item__bottom"><div className="quantity-control"><button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label="Decrease quantity">−</button><span>{item.quantity}</span><button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label="Increase quantity">+</button></div><strong>{formatPrice((item.product.basePrice + item.variant.priceAdjustment) * item.quantity)}</strong></div></div>
               </div>)}
             </div>
