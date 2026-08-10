@@ -1,7 +1,11 @@
 import CollectionGrid from '@/components/CollectionGrid';
 import CollectionHero from '@/components/CollectionHero';
+import { getPageMetadata } from '@/lib/seo/metadata';
 
-export const metadata = { title: 'Collection — Praba Leather Bali', description: 'Explore the handcrafted leather categories from Praba Leather Bali.' };
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params;
+  return getPageMetadata(lang, 'collection', '/collection/');
+}
 
 export default async function CollectionPage() {
   return <main className="collection-page">

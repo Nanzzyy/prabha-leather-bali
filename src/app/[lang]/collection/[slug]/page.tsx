@@ -2,6 +2,7 @@ import { getDefaultContent } from '@/lib/content/defaults';
 import { LANGS } from '@/lib/i18n/dictionaries';
 import { getCatalogProducts } from '@/lib/repositories';
 import CollectionBrowser from '@/components/CollectionBrowser';
+import { getPageMetadata } from '@/lib/seo/metadata';
 
 export const dynamicParams = true;
 
@@ -11,8 +12,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { lang, slug } = await params;
-  const item = getDefaultContent(lang === 'id' ? 'id' : 'en').collection.items.find((entry) => entry.slug === slug);
-  return { title: item ? `${item.title} — Praba Leather Bali` : 'Collection — Praba Leather Bali' };
+  return getPageMetadata(lang, 'collectionDetail', `/collection/${slug}/`);
 }
 
 export default async function CollectionDetailPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {

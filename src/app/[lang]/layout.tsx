@@ -9,10 +9,15 @@ import { isValidLang, LANGS } from '@/lib/i18n/dictionaries';
 import { SiteContentProvider } from '@/lib/content/SiteContentContext';
 import { ServiceStatusProvider } from '@/lib/service/ServiceStatusContext';
 import StorefrontGate from '@/components/StorefrontGate';
+import { buildMetadata, getLiveSeo } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
-  title: 'Praba Leather Bali — Handcrafted Excellence',
-};
+export const revalidate = 60;
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isValidLang(lang)) return {};
+  return buildMetadata(await getLiveSeo(lang), lang, 'home', '/');
+}
 
 export function generateStaticParams() {
   return LANGS.map((lang) => ({ lang }));

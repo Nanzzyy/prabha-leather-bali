@@ -594,3 +594,7 @@
   .admin-icon-picker-field__preview { width: 36px; height: 42px; }
   .admin-icon-picker-field__control .admin-btn { grid-column: 1 / -1; justify-content: center; }
 }
+
+.admin-seo-pages { display: grid; gap: 1rem; }
+.admin-seo-page { padding: 1rem; border: 1px solid var(--border); border-radius: 10px; background: var(--bone-deep); }
+.admin-seo-page h4 { margin: 0 0 0.85rem; font-size: 0.9rem; }

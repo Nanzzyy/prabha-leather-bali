@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import ProductDetailClient from '@/components/ProductDetailClient';
-import { catalogProducts } from '@/lib/data/catalog';
 import { getCatalogProductBySlug, getCatalogProducts } from '@/lib/repositories';
+import { getPageMetadata } from '@/lib/seo/metadata';
 
 export const dynamicParams = true;
 
@@ -11,9 +11,8 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
-  const { slug } = await params;
-  const product = catalogProducts.find((item) => item.slug === slug);
-  return { title: product ? `${product.name} — Praba Leather Bali` : 'Product — Praba Leather Bali' };
+  const { lang, slug } = await params;
+  return getPageMetadata(lang, 'product', `/catalog/${slug}/`);
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {

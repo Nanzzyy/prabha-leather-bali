@@ -1,10 +1,13 @@
-import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import LegalPage from '@/components/LegalPage';
 import { getLegalPolicy } from '@/lib/legal/policies';
 import { isValidLang, LANGS, type Lang } from '@/lib/i18n/dictionaries';
+import { getPageMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = { title: 'Privacy Policy — Praba Leather Bali', description: 'How Praba Leather Bali handles storefront, enquiry, order, and browser data.' };
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params;
+  return getPageMetadata(lang, 'privacy', '/privacy/');
+}
 
 export function generateStaticParams() { return LANGS.map((lang) => ({ lang })); }
 

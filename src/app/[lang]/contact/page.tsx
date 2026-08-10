@@ -1,10 +1,11 @@
 import ContactClient, { Store } from '@/components/ContactClient';
 import ContactHero from '@/components/ContactHero';
+import { getPageMetadata } from '@/lib/seo/metadata';
 
-export const metadata = {
-  title: 'Contact — Praba Leather Bali',
-  description: 'Visit Praba Leather Bali. Our ateliers in Canggu, Ubud and Seminyak, opening hours, phone, email, and WhatsApp.',
-};
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params;
+  return getPageMetadata(lang, 'contact', '/contact/');
+}
 
 // ponytail: placeholder store details — swap for Praba's real addresses/phone/email.
 const stores: Store[] = [

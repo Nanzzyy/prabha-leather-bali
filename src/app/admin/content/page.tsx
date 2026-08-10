@@ -11,6 +11,8 @@ import {
   getDefaultContent,
   mergeSiteContent,
   normalizeCollectionSubcategory,
+  type SeoPageKey,
+  type SiteSeo,
   type ContentSection,
   type SiteContent,
 } from '@/lib/content/defaults';
@@ -226,6 +228,7 @@ function GlobalEditor({ value, onChange, onError }: { value: SiteContent['global
       <EditorCard title="Navbar logo" description="Shared by the English and Indonesian storefronts. Use a transparent PNG, WebP, or SVG for the cleanest result.">
         <ImageField label="Logo image" value={value.brand} onChange={(brand) => onChange({ ...value, brand })} onError={onError} contain />
       </EditorCard>
+      <SeoEditor value={value.seo} onChange={(seo) => onChange({ ...value, seo })} onError={onError} />
       <EditorCard title="Main navigation" description="Labels shown in the header and primary menus.">
         <StringFields values={value.nav} onChange={(key, next) => onChange({ ...value, nav: { ...value.nav, [key]: next } })} />
       </EditorCard>
@@ -240,6 +243,57 @@ function GlobalEditor({ value, onChange, onError }: { value: SiteContent['global
       </EditorCard>
     </div>
   );
+}
+
+const SEO_PAGE_KEYS: Array<{ key: SeoPageKey; label: string }> = [
+  { key: 'home', label: 'Homepage' },
+  { key: 'catalog', label: 'Catalog' },
+  { key: 'collection', label: 'Collection' },
+  { key: 'about', label: 'About' },
+  { key: 'contact', label: 'Contact' },
+  { key: 'privacy', label: 'Privacy Policy' },
+  { key: 'terms', label: 'Terms of Service' },
+  { key: 'cookies', label: 'Cookies' },
+  { key: 'product', label: 'Product detail' },
+  { key: 'collectionDetail', label: 'Collection detail' },
+];
+
+function SeoEditor({ value, onChange, onError }: { value: SiteSeo; onChange: (value: SiteSeo) => void; onError: (message: string) => void }) {
+  const set = <K extends keyof SiteSeo>(key: K, next: SiteSeo[K]) => onChange({ ...value, [key]: next });
+  return <>
+    <EditorCard title="SEO defaults" description="These values are rendered in the initial HTML head for search engines and social sharing. Keep titles concise and descriptions specific to Praba Leather Bali.">
+      <FieldGrid fields={[
+        <TextField key="siteName" label="Site name" value={value.siteName} onChange={(next) => set('siteName', next)} />,
+        <TextField key="siteTitle" label="Default title" value={value.siteTitle} onChange={(next) => set('siteTitle', next)} hint="Recommended: 50–60 characters." />,
+        <TextField key="siteDescription" label="Default meta description" value={value.siteDescription} onChange={(next) => set('siteDescription', next)} multiline hint="Recommended: 140–160 characters." />,
+        <TextField key="keywords" label="Keywords" value={value.keywords} onChange={(next) => set('keywords', next)} hint="Separate phrases with commas." />,
+        <TextField key="canonicalUrl" label="Canonical site URL" value={value.canonicalUrl} onChange={(next) => set('canonicalUrl', next)} hint="Use the public HTTPS domain without a trailing slash." />,
+        <TextField key="robots" label="Robots directive" value={value.robots} onChange={(next) => set('robots', next)} hint="Example: index,follow or noindex,nofollow." />,
+      ]} />
+    </EditorCard>
+    <EditorCard title="Open Graph & Twitter" description="Controls previews when pages are shared on WhatsApp, Instagram, Facebook, X, and other link-preview clients.">
+      <FieldGrid fields={[
+        <TextField key="ogTitle" label="Open Graph title" value={value.ogTitle} onChange={(next) => set('ogTitle', next)} />,
+        <TextField key="ogDescription" label="Open Graph description" value={value.ogDescription} onChange={(next) => set('ogDescription', next)} multiline />,
+        <TextField key="twitterTitle" label="Twitter title" value={value.twitterTitle} onChange={(next) => set('twitterTitle', next)} />,
+        <TextField key="twitterDescription" label="Twitter description" value={value.twitterDescription} onChange={(next) => set('twitterDescription', next)} multiline />,
+      ]} />
+      <ImageField label="Open Graph image" value={value.ogImage} onChange={(ogImage) => set('ogImage', ogImage)} onError={onError} />
+      <ImageField label="Twitter image" value={value.twitterImage} onChange={(twitterImage) => set('twitterImage', twitterImage)} onError={onError} />
+    </EditorCard>
+    <EditorCard title="Favicon" description="Upload a square PNG, SVG, or ICO. The selected icon is emitted as the browser favicon in the rendered document head.">
+      <ImageField label="Favicon" value={value.favicon} onChange={(favicon) => set('favicon', favicon)} onError={onError} contain />
+    </EditorCard>
+    <EditorCard title="Page titles & descriptions" description="Edit the title and description used by each public page. Product and collection detail pages use these as fallbacks.">
+      <div className="admin-seo-pages">{SEO_PAGE_KEYS.map(({ key, label }) => <div className="admin-seo-page" key={key}>
+        <h4>{label}</h4>
+        <FieldGrid fields={[
+          <TextField key="title" label="Page title" value={value.pages[key].title} onChange={(next) => set('pages', { ...value.pages, [key]: { ...value.pages[key], title: next } })} />,
+          <TextField key="description" label="Page description" value={value.pages[key].description} onChange={(next) => set('pages', { ...value.pages, [key]: { ...value.pages[key], description: next } })} multiline />,
+        ]} />
+      </div>)}</div>
+    </EditorCard>
+  </>;
 }
 
 function HomeEditor({ value, onChange }: { value: SiteContent['home']; onChange: (value: SiteContent['home']) => void }) {

@@ -2,6 +2,24 @@ import { heroImages, catalogProducts } from '@/lib/data/catalog';
 import type { Lang } from '@/lib/i18n/dictionaries';
 
 export type ContentImage = { image_url: string; alt: string };
+export type SeoPageKey = 'home' | 'catalog' | 'collection' | 'about' | 'contact' | 'privacy' | 'terms' | 'cookies' | 'product' | 'collectionDetail';
+export type SeoPage = { title: string; description: string };
+export type SiteSeo = {
+  siteName: string;
+  siteTitle: string;
+  siteDescription: string;
+  keywords: string;
+  canonicalUrl: string;
+  robots: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: ContentImage;
+  twitterTitle: string;
+  twitterDescription: string;
+  twitterImage: ContentImage;
+  favicon: ContentImage;
+  pages: Record<SeoPageKey, SeoPage>;
+};
 export type CollectionSubcategory = { slug: string; title: string };
 export type CollectionContentItem = { slug: string; title: string; copy: string; image_url: string; subcategories: Array<CollectionSubcategory | string> };
 export type TrustContentItem = { number: string; title: string; body: string };
@@ -15,6 +33,7 @@ export type SiteContent = {
     nav: { home: string; catalog: string; collection: string; contact: string; about: string };
     header: { search: string; searchPlaceholder: string; pouch: string };
     footer: { brand: string; tagline: string; explore: string; service: string; visit: string; ourStory: string; contact: string; shipping: string; careGuide: string; locations: string; mapQuery: string; handcrafted: string; rights: string; privacy: string; privacyHref: string; terms: string; termsHref: string; cookies: string; cookiesHref: string; phone: string; phoneHref: string; email: string; whatsapp: string; instagram: string };
+    seo: SiteSeo;
     cart: { title: string; item: string; items: string; close: string; emptyTitle: string; emptyBody: string; exploreCatalog: string; almostYours: string; orderDetails: string; fullName: string; delivery: string; notes: string; subtotal: string; estimatedShipping: string; calculatedViaWhatsapp: string; continueOrder: string; clearPouch: string; confirmation: string };
   };
   home: {
@@ -58,6 +77,33 @@ const en: SiteContent = {
     brand: { image_url: '/praba-logo.svg', alt: 'Praba Leather Bali' },
     nav: { home: 'Home', catalog: 'Catalog', collection: 'Collection', contact: 'Contact', about: 'About Us' },
     header: { search: 'Search', searchPlaceholder: 'Search the collection', pouch: 'Pouch' },
+    seo: {
+      siteName: 'Praba Leather Bali',
+      siteTitle: 'Praba Leather Bali — Handcrafted Leather Goods from Bali',
+      siteDescription: 'Discover handcrafted full-grain leather bags, boots, jackets, wallets, and accessories made by Balinese artisans in Bali, Indonesia.',
+      keywords: 'Praba Leather Bali, handcrafted leather Bali, full-grain leather, leather bags Bali, leather boots Bali, leather goods Indonesia',
+      canonicalUrl: 'https://prabaleather.com',
+      robots: 'index,follow',
+      ogTitle: 'Praba Leather Bali — Handcrafted Leather Goods from Bali',
+      ogDescription: 'Full-grain leather goods made slowly in Bali, Indonesia. Explore bags, boots, jackets, wallets, and accessories built to carry your story.',
+      ogImage: { image_url: '/samples/sample-main.jpeg', alt: 'Handcrafted full-grain leather goods by Praba Leather Bali' },
+      twitterTitle: 'Praba Leather Bali — Handcrafted Leather Goods from Bali',
+      twitterDescription: 'Full-grain leather goods made slowly in Bali, Indonesia.',
+      twitterImage: { image_url: '/samples/sample-main.jpeg', alt: 'Handcrafted full-grain leather goods by Praba Leather Bali' },
+      favicon: { image_url: '/praba-logo.svg', alt: 'Praba Leather Bali favicon' },
+      pages: {
+        home: { title: 'Handcrafted Leather Goods from Bali', description: 'Explore Praba Leather Bali: full-grain leather bags, boots, jackets, wallets, and accessories made by Balinese artisans.' },
+        catalog: { title: 'Handcrafted Leather Collection', description: 'Shop full-grain leather bags, boots, jackets, wallets, and accessories handcrafted in Bali.' },
+        collection: { title: 'Leather Collections', description: 'Explore Praba Leather Bali collections by kind: bags, footwear, wallets, accessories, and jackets.' },
+        about: { title: 'Our Story — Praba Leather Bali', description: 'Meet the Balinese artisans and the considered craft behind Praba Leather Bali.' },
+        contact: { title: 'Visit Praba Leather Bali in Bali', description: 'Find Praba Leather Bali ateliers in Canggu, Ubud, and Seminyak, or contact our team for a leather enquiry.' },
+        privacy: { title: 'Privacy Policy — Praba Leather Bali', description: 'Learn how Praba Leather Bali handles storefront, enquiry, order, and browser data.' },
+        terms: { title: 'Terms of Service — Praba Leather Bali', description: 'Read the terms for browsing, enquiries, pouch orders, shipping, returns, and custom leather work.' },
+        cookies: { title: 'Cookies & Browser Storage — Praba Leather Bali', description: 'See the browser storage used by the Praba Leather Bali storefront and how to manage it.' },
+        product: { title: 'Handcrafted Leather Product — Praba Leather Bali', description: 'Discover a handcrafted full-grain leather piece from Praba Leather Bali.' },
+        collectionDetail: { title: 'Leather Collection — Praba Leather Bali', description: 'Explore considered leather pieces made slowly in Bali for everyday rituals.' },
+      },
+    },
     footer: { brand: 'PRABA LEATHER BALI', tagline: 'A small house of Balinese artisans crafting full-grain leather goods made to carry your story — slowly, honestly, by hand.', explore: 'Explore', service: 'Service', visit: 'Visit', ourStory: 'Our Story', contact: 'Contact', shipping: 'Shipping & Returns', careGuide: 'Care Guide', locations: 'Canggu · Ubud · Seminyak', mapQuery: 'Canggu Bali', handcrafted: 'Handcrafted in Bali, Indonesia · A workshop of Balinese artisans.', rights: 'All rights reserved.', privacy: 'Privacy Policy', privacyHref: '/privacy/', terms: 'Terms of Service', termsHref: '/terms/', cookies: 'Cookies', cookiesHref: '/cookies/', phone: '+62 818 0459 5666', phoneHref: '+6281804595666', email: 'hello@prabaleather.com', whatsapp: '6281804595666', instagram: 'https://instagram.com' },
     cart: { title: 'Your Order Pouch', item: 'item', items: 'items', close: 'Close order pouch', emptyTitle: 'Your pouch is empty', emptyBody: 'Explore the collection and save a piece for your next story.', exploreCatalog: 'Explore catalog', almostYours: 'Almost yours', orderDetails: 'Order Details', fullName: 'Your full name', delivery: 'Delivery address / country', notes: 'Special notes for artisan', subtotal: 'Subtotal', estimatedShipping: 'Estimated shipping', calculatedViaWhatsapp: 'Calculated via WhatsApp', continueOrder: 'Continue Order to WhatsApp', clearPouch: 'Clear pouch', confirmation: 'We’ll confirm availability and shipping costs with you directly.' },
   },
@@ -123,7 +169,7 @@ const en: SiteContent = {
 };
 
 const idOverrides: DeepPartial<SiteContent> = {
-  global: { nav: { home: 'Beranda', catalog: 'Katalog', collection: 'Koleksi', contact: 'Kontak', about: 'Tentang Kami' }, header: { search: 'Cari', searchPlaceholder: 'Cari di koleksi', pouch: 'Pouch' }, footer: { ...en.global.footer, tagline: 'Rumah kecil pengrajin Bali yang membuat barang kulit full-grain untuk menemani cerita Anda — perlahan, jujur, dengan tangan.', explore: 'Jelajahi', service: 'Layanan', visit: 'Kunjungi', ourStory: 'Cerita Kami', contact: 'Kontak', shipping: 'Pengiriman & Pengembalian', careGuide: 'Panduan Perawatan', handcrafted: 'Dibuat tangan di Bali, Indonesia · Rumah pengrajin Bali.', rights: 'Hak cipta dilindungi.', privacy: 'Kebijakan Privasi', terms: 'Ketentuan Layanan', cookies: 'Cookie' }, cart: { ...en.global.cart, title: 'Pouch Pesanan Anda', emptyTitle: 'Pouch Anda kosong', emptyBody: 'Jelajahi koleksi dan simpan piece untuk cerita Anda berikutnya.', exploreCatalog: 'Jelajahi katalog', almostYours: 'Hampir jadi milik Anda', orderDetails: 'Detail Pesanan', fullName: 'Nama lengkap Anda', delivery: 'Alamat / negara pengiriman', notes: 'Catatan khusus untuk pengrajin', subtotal: 'Subtotal', estimatedShipping: 'Perkiraan pengiriman', calculatedViaWhatsapp: 'Dihitung melalui WhatsApp', continueOrder: 'Lanjutkan Pesanan via WhatsApp', clearPouch: 'Kosongkan pouch', confirmation: 'Kami akan mengonfirmasi ketersediaan dan biaya pengiriman langsung kepada Anda.' } },
+  global: { nav: { home: 'Beranda', catalog: 'Katalog', collection: 'Koleksi', contact: 'Kontak', about: 'Tentang Kami' }, header: { search: 'Cari', searchPlaceholder: 'Cari di koleksi', pouch: 'Pouch' }, seo: { ...en.global.seo, siteTitle: 'Praba Leather Bali — Kerajinan Kulit Buatan Tangan', siteDescription: 'Temukan tas, sepatu bot, jaket, dompet, dan aksesori kulit full-grain buatan pengrajin Bali di Indonesia.', keywords: 'Praba Leather Bali, kulit buatan tangan Bali, kulit full-grain, tas kulit Bali, sepatu kulit Bali, kerajinan kulit Indonesia', ogTitle: 'Praba Leather Bali — Kerajinan Kulit Buatan Tangan', ogDescription: 'Barang kulit full-grain yang dibuat perlahan di Bali, Indonesia. Temukan tas, sepatu, jaket, dompet, dan aksesori untuk menemani cerita Anda.', twitterTitle: 'Praba Leather Bali — Kerajinan Kulit Buatan Tangan', twitterDescription: 'Barang kulit full-grain yang dibuat perlahan di Bali, Indonesia.', pages: { ...en.global.seo.pages, home: { title: 'Barang Kulit Buatan Tangan dari Bali', description: 'Jelajahi Praba Leather Bali: tas, sepatu, jaket, dompet, dan aksesori kulit full-grain buatan pengrajin Bali.' }, catalog: { title: 'Koleksi Kulit Buatan Tangan', description: 'Belanja tas, sepatu, jaket, dompet, dan aksesori kulit full-grain yang dibuat tangan di Bali.' }, collection: { title: 'Koleksi Barang Kulit', description: 'Jelajahi koleksi Praba Leather Bali berdasarkan jenis: tas, alas kaki, dompet, aksesori, dan jaket.' }, about: { title: 'Cerita Kami — Praba Leather Bali', description: 'Kenali pengrajin Bali dan proses pembuatan di balik Praba Leather Bali.' }, contact: { title: 'Kunjungi Praba Leather Bali di Bali', description: 'Temukan atelier Praba Leather Bali di Canggu, Ubud, dan Seminyak, atau hubungi kami untuk pertanyaan kulit.' }, privacy: { title: 'Kebijakan Privasi — Praba Leather Bali', description: 'Pelajari cara Praba Leather Bali menangani data storefront, pertanyaan, pesanan, dan browser.' }, terms: { title: 'Ketentuan Layanan — Praba Leather Bali', description: 'Baca ketentuan penjelajahan, pertanyaan, pesanan pouch, pengiriman, pengembalian, dan pekerjaan custom.' }, cookies: { title: 'Cookie & Penyimpanan Browser — Praba Leather Bali', description: 'Lihat penyimpanan browser yang digunakan storefront Praba Leather Bali dan cara mengelolanya.' } } }, footer: { ...en.global.footer, tagline: 'Rumah kecil pengrajin Bali yang membuat barang kulit full-grain untuk menemani cerita Anda — perlahan, jujur, dengan tangan.', explore: 'Jelajahi', service: 'Layanan', visit: 'Kunjungi', ourStory: 'Cerita Kami', contact: 'Kontak', shipping: 'Pengiriman & Pengembalian', careGuide: 'Panduan Perawatan', handcrafted: 'Dibuat tangan di Bali, Indonesia · Rumah pengrajin Bali.', rights: 'Hak cipta dilindungi.', privacy: 'Kebijakan Privasi', terms: 'Ketentuan Layanan', cookies: 'Cookie' }, cart: { ...en.global.cart, title: 'Pouch Pesanan Anda', emptyTitle: 'Pouch Anda kosong', emptyBody: 'Jelajahi koleksi dan simpan piece untuk cerita Anda berikutnya.', exploreCatalog: 'Jelajahi katalog', almostYours: 'Hampir jadi milik Anda', orderDetails: 'Detail Pesanan', fullName: 'Nama lengkap Anda', delivery: 'Alamat / negara pengiriman', notes: 'Catatan khusus untuk pengrajin', subtotal: 'Subtotal', estimatedShipping: 'Perkiraan pengiriman', calculatedViaWhatsapp: 'Dihitung melalui WhatsApp', continueOrder: 'Lanjutkan Pesanan via WhatsApp', clearPouch: 'Kosongkan pouch', confirmation: 'Kami akan mengonfirmasi ketersediaan dan biaya pengiriman langsung kepada Anda.' } },
   home: { ...en.home, introEyebrow: 'Sudut pandang Praba', introH1a: 'Dibuat untuk perjalanan,', introH1b: 'tumbuh berkarakter.', introBody: 'Berakar di Kuta, Bali. Lebih dari 30 tahun kerajinan menghadirkan tas, sepatu, dan sandal kulit 100% asli dengan nilai terbaik di pulau ini.', featuredEyebrow: 'Paling dicari', featuredTitle: 'Koleksi Trending', noteEyebrow: 'Janji Praba', noteH2a: 'Dibuat perlahan.', noteH2b: 'Dipakai selamanya.', noteBody: 'Kami percaya hal terbaik menyatakan dirinya seiring waktu. Kulit Anda akan menggelap, melembut, dan menjadi milik Anda sepenuhnya.', lookbook: { eyebrow: 'Lemari yang dipertimbangkan', title: 'Look Terpilih', body: 'Objek yang dibuat untuk bergerak bersama, masing-masing membawa kehangatan tangan yang membentuknya.' } },
   collection: { ...en.collection, hero: { ...en.collection.hero, h1a: 'Sang', h1b: 'Koleksi', body: 'Barang kulit yang dipertimbangkan untuk ritual sehari-hari, dibuat perlahan di Bali dan dirancang untuk menemani Anda.' } },
   catalog: { ...en.catalog, hero: { ...en.catalog.hero, eyebrow: 'Koleksi', h1a: 'Koleksi Buatan', h1b: 'Tangan', body: 'Setiap potongan adalah studi tekstur alami, kegunaan yang dipertimbangkan, dan kepercayaan diri yang tenang dari sesuatu yang dibuat dengan baik.' } },

@@ -1,8 +1,12 @@
 import CatalogClient from '@/components/CatalogClient';
 import CatalogHero from '@/components/CatalogHero';
 import { getCatalogProducts } from '@/lib/repositories';
+import { getPageMetadata } from '@/lib/seo/metadata';
 
-export const metadata = { title: 'Catalog — Praba Leather Bali', description: 'Explore handcrafted full-grain leather pieces from Bali.' };
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params;
+  return getPageMetadata(lang, 'catalog', '/catalog/');
+}
 
 export default async function CatalogPage() {
   const products = await getCatalogProducts();
