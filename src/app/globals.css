@@ -110,6 +110,8 @@ em { font-style: italic; }
 .product-card--compact .product-card__media { aspect-ratio: 3 / 4; }
 .lookbook { width: 100%; max-width: none; margin: 0; padding: 112px 0 130px; border-top: 1px solid var(--border); }
 .lookbook--loading { min-height: 60vh; }
+.lookbook-lazy-placeholder { min-height: 60vh; border-top: 1px solid var(--border); background: var(--bone); }
+.lookbook-lazy-slot { min-height: 1px; }
 .lookbook .section-heading { max-width: 1356px; margin: 0 auto 56px; padding: 0 42px; }
 .lookbook__looks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; gap: 0; }
 .look { position: relative; border: 0; }

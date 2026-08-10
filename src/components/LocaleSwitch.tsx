@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import Icon from './Icon';
 import { LANG_LABELS, LANGS, type Lang } from '@/lib/i18n/dictionaries';
 import { useLang } from '@/lib/i18n/LangContext';
@@ -11,11 +11,18 @@ export default function LocaleSwitch() {
   const { lang } = useLang();
   const pathname = usePathname() ?? '/';
   const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
 
-  // query string is only known in the browser; read it after mount to avoid SSR mismatch.
-  useEffect(() => setSearch(typeof window !== 'undefined' ? window.location.search : ''), []);
+  // Read the browser query string through an external-store subscription so the
+  // server snapshot stays deterministic without a post-mount setState.
+  const search = useSyncExternalStore(
+    (onChange) => {
+      window.addEventListener('popstate', onChange);
+      return () => window.removeEventListener('popstate', onChange);
+    },
+    () => window.location.search,
+    () => '',
+  );
 
   // Keep the menu open while the pointer crosses its small visual offset. The
   // old mouseleave handler closed it before a language link could be clicked.

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react';
-import { DEFAULT_LANG, dicts, isValidLang, type Lang } from './dictionaries';
+import { DEFAULT_LANG, dicts, type Lang } from './dictionaries';
 
 interface LangContextValue {
   lang: Lang;

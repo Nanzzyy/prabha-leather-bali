@@ -25,7 +25,7 @@ export default function CollectionBrowser({ slug, initialProducts }: Props) {
 
   useEffect(() => {
     let mounted = true;
-    fetchLiveProducts(true).then((value) => { if (mounted && value) setProducts(value); }).catch(() => {});
+    fetchLiveProducts().then((value) => { if (mounted && value) setProducts(value); }).catch(() => {});
     fetchLiveCollectionProductGroups().then((value) => { if (mounted) setGroups(value); }).catch(() => {});
     return () => { mounted = false; };
   }, []);

@@ -61,12 +61,26 @@ export interface ProductInput {
   images: AdminImage[];
 }
 
+type AdminProductRow = {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  leather_type?: string | null;
+  base_price_usd?: number | string | null;
+  is_featured?: boolean | null;
+  created_at: string;
+  categories?: { id?: string; slug?: string } | { id?: string; slug?: string }[] | null;
+  product_images?: Array<{ id?: string; image_url: string; is_primary?: boolean; display_order?: number }> | null;
+  product_variants?: Array<{ id?: string; sku: string; color_name: string; color_hex?: string | null; size_eu?: string | null; image_url?: string | null; stock_status: StockStatus }> | null;
+};
+
 function requireClient() {
   if (!adminSupabase) throw new Error('Supabase env missing (NEXT_PUBLIC_SUPABASE_URL / ANON_KEY).');
   return adminSupabase;
 }
 
-function mapProduct(row: any): AdminProduct {
+function mapProduct(row: AdminProductRow): AdminProduct {
   const cat = Array.isArray(row.categories) ? row.categories[0] : row.categories;
   return {
     id: row.id,
@@ -80,9 +94,9 @@ function mapProduct(row: any): AdminProduct {
     category_id: cat?.id ?? null,
     category_slug: cat?.slug ?? null,
     images: (row.product_images ?? [])
-      .sort((a: any, b: any) => a.display_order - b.display_order)
-      .map((i: any) => ({ id: i.id, image_url: i.image_url, is_primary: i.is_primary, display_order: i.display_order })),
-    variants: (row.product_variants ?? []).map((v: any) => ({
+      .sort((a, b) => Number(a.display_order ?? 0) - Number(b.display_order ?? 0))
+      .map((i) => ({ id: i.id, image_url: i.image_url, is_primary: Boolean(i.is_primary), display_order: Number(i.display_order ?? 0) })),
+    variants: (row.product_variants ?? []).map((v) => ({
       id: v.id, sku: v.sku, color_name: v.color_name, color_hex: v.color_hex ?? null,
       size_eu: v.size_eu ?? null, image_url: v.image_url ?? null, stock_status: v.stock_status,
     })),
@@ -116,7 +130,7 @@ export async function listProducts(): Promise<AdminProduct[]> {
   const sb = requireClient();
   const { data, error } = await sb.from('products').select(PRODUCT_SELECT).order('created_at', { ascending: false });
   if (error) throw error;
-  return (data ?? []).map(mapProduct);
+  return ((data ?? []) as unknown as AdminProductRow[]).map(mapProduct);
 }
 
 export async function getProductById(id: string): Promise<AdminProduct | null> {
@@ -445,18 +459,41 @@ export interface AdminLookSpot { id?: string; product_id: string | null; product
 export interface AdminLook { id: string; title: string; image_url: string; image_url_2: string | null; display_order: number; is_active: boolean; spots: AdminLookSpot[]; }
 export interface LookInput { id?: string; title: string; image_url: string; image_url_2?: string | null; is_active: boolean; display_order: number; spots: AdminLookSpot[]; }
 
+type AdminLookRow = {
+  id: string;
+  title: string;
+  image_url: string;
+  image_url_2?: string | null;
+  display_order?: number | null;
+  is_active: boolean;
+  look_spots?: Array<{
+    id?: string;
+    product_id: string | null;
+    x: number;
+    y: number;
+    image_index?: number | null;
+    display_order?: number | null;
+    products?: { title?: string } | { title?: string }[] | null;
+  }> | null;
+};
+
 export async function listLooks(): Promise<AdminLook[]> {
   const sb = requireClient();
   const { data, error } = await sb.from('looks')
     .select('id, title, image_url, image_url_2, display_order, is_active, look_spots(id, product_id, x, y, image_index, display_order, products(title))')
     .order('display_order');
   if (error) throw error;
-  return (data ?? []).map((row: any) => ({
+  const rows = (data ?? []) as unknown as AdminLookRow[];
+  return rows.map((row) => ({
     id: row.id, title: row.title, image_url: row.image_url, image_url_2: row.image_url_2 ?? null,
-    display_order: row.display_order, is_active: row.is_active,
+    display_order: Number(row.display_order ?? 0), is_active: row.is_active,
     spots: (row.look_spots ?? [])
-      .sort((a: any, b: any) => a.display_order - b.display_order)
-      .map((s: any) => ({ id: s.id, product_id: s.product_id, product_title: s.products?.title ?? null, x: Number(s.x), y: Number(s.y), image_index: Number(s.image_index ?? 0) })),
+      .slice()
+      .sort((a, b) => Number(a.display_order ?? 0) - Number(b.display_order ?? 0))
+      .map((s) => {
+        const product = Array.isArray(s.products) ? s.products[0] : s.products;
+        return { id: s.id, product_id: s.product_id, product_title: product?.title, x: Number(s.x), y: Number(s.y), image_index: Number(s.image_index ?? 0) };
+      }),
   }));
 }
 

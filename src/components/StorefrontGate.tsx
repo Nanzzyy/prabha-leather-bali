@@ -3,8 +3,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
 import { useServiceStatus } from '@/lib/service/ServiceStatusContext';
-import { fetchLiveProducts, fetchLiveHeroes, fetchLiveStores, fetchLiveLooks } from '@/lib/catalog/live';
-import { fetchLiveCollectionProductGroups } from '@/lib/collection/live';
 import MaintenanceState from './MaintenanceState';
 import ServiceBanner from './ServiceBanner';
 
@@ -22,24 +20,6 @@ export default function StorefrontGate({ children }: { children: React.ReactNode
   // A failed content fetch (after the cap) means we are on bundled defaults —
   // flag degraded so the banner shows, but stay interactive.
   useEffect(() => { if (unavailable) reportDataError(); }, [unavailable, reportDataError]);
-
-  // Warm shared data caches in the background. Navbar/page text are gated only
-  // on content (above); products/heroes/looks refresh after first paint.
-  useEffect(() => {
-    let mounted = true;
-    Promise.allSettled([
-      fetchLiveProducts(),
-      fetchLiveHeroes(),
-      fetchLiveStores(),
-      fetchLiveLooks(),
-      fetchLiveCollectionProductGroups(),
-    ]).then((results) => {
-      if (!mounted) return;
-      const allEmpty = results.every((r) => r.status === 'fulfilled' && (r.value === null || (Array.isArray(r.value) && r.value.length === 0)));
-      if (allEmpty) reportDataError();
-    });
-    return () => { mounted = false; };
-  }, [reportDataError]);
 
   // Maintenance only when offline. The loader masks the content swap (no text
   // flash) and lifts as soon as content is ready (capped <2s; ~instant on repeat
