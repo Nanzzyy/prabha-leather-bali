@@ -47,7 +47,6 @@ export default function SiteFooter() {
           <span className="site-footer__legal-main">© {new Date().getFullYear()} Praba Leather Bali. {footer.rights}</span>
           <span className="site-footer__legal-sub">{footer.handcrafted}</span>
         </div>
-        {/* ponytail: point these to real policy pages when built; /contact/ is a temporary stand-in. */}
         <nav className="site-footer__policies" aria-label="Legal">
           <LocaleLink href={footer.privacyHref}>{footer.privacy}</LocaleLink>
           <LocaleLink href={footer.termsHref}>{footer.terms}</LocaleLink>
