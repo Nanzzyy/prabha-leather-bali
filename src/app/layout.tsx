@@ -1,5 +1,30 @@
 import type { Metadata } from 'next';
+import { EB_Garamond, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
+
+const serifFont = EB_Garamond({
+  subsets: ['latin'],
+  weight: 'variable',
+  style: 'normal',
+  display: 'swap',
+  variable: '--font-serif',
+});
+
+const serifItalicFont = EB_Garamond({
+  subsets: ['latin'],
+  weight: 'variable',
+  style: 'italic',
+  display: 'swap',
+  preload: false,
+  variable: '--font-serif-italic',
+});
+
+const sansFont = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  weight: 'variable',
+  display: 'swap',
+  variable: '--font-sans',
+});
 
 export const metadata: Metadata = {
   title: 'Praba Leather Bali — Handcrafted Excellence',
@@ -13,22 +38,12 @@ export const revalidate = 0;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" className={`light ${serifFont.variable} ${serifItalicFont.variable} ${sansFont.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(() => {
-              const link = document.createElement('link');
-              link.rel = 'preload';
-              link.as = 'style';
-              link.fetchPriority = 'low';
-              link.href = 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap';
-              link.onload = () => { link.rel = 'stylesheet'; link.onload = null; };
-              link.onerror = () => { link.rel = 'stylesheet'; };
-              document.head.appendChild(link);
-
               // Host caches can briefly serve HTML from one build with assets
               // from another. A single cache-busting retry prevents a blank
               // loader when a hashed Next.js chunk or stylesheet is missing.

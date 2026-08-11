@@ -20,8 +20,8 @@
   --gold: #c5a059;
   --leather: #8b4513;
   --whatsapp: #25d366;
-  --serif: "EB Garamond", Georgia, serif;
-  --sans: "Plus Jakarta Sans", Arial, sans-serif;
+  --serif: var(--font-serif), Georgia, serif;
+  --sans: var(--font-sans), Arial, sans-serif;
 }
 
 * { box-sizing: border-box; }
