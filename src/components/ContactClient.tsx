@@ -5,6 +5,7 @@ import Icon from './Icon';
 import { fetchLiveStores } from '@/lib/catalog/live';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
 import { useServiceStatus } from '@/lib/service/ServiceStatusContext';
+import { extractGoogleMapsEmbedQuery, getGoogleMapsEmbedSrc, getGoogleMapsHref, isGoogleMapsUrl } from '@/lib/maps';
 
 export type Store = {
   name: string;
@@ -35,8 +36,31 @@ export default function ContactClient({ stores: initialStores }: Props) {
   const stores = (live ?? initialStores).filter((s, i, arr) => arr.findIndex((x) => x.name === s.name) === i);
   const [active, setActive] = useState(0);
   const store = stores[active];
-  const mapHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(store.mapQuery)}`;
-  const embedSrc = `https://www.google.com/maps?q=${encodeURIComponent(store.mapQuery)}&output=embed`;
+  const mapInput = store.mapQuery.trim();
+  const fallbackMapQuery = store.address.trim() || store.name;
+  const [resolvedMap, setResolvedMap] = useState<{ input: string; query: string } | null>(null);
+  const localMapQuery = isGoogleMapsUrl(mapInput) ? extractGoogleMapsEmbedQuery(mapInput) : null;
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!isGoogleMapsUrl(mapInput)) return () => { cancelled = true; };
+
+    const normalizedMapInput = mapInput.toLowerCase();
+    if (!normalizedMapInput.includes('maps.app.goo.gl') && !normalizedMapInput.includes('goo.gl/maps')) return () => { cancelled = true; };
+
+    fetch(`/api/maps/resolve?url=${encodeURIComponent(mapInput)}`)
+      .then((response) => response.ok ? response.json() as Promise<{ query?: string }> : null)
+      .then((result) => {
+        if (!cancelled && result?.query) setResolvedMap({ input: mapInput, query: result.query });
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [mapInput]);
+
+  const mapHref = getGoogleMapsHref(mapInput, fallbackMapQuery);
+  const embedQuery = resolvedMap?.input === mapInput ? resolvedMap.query : (localMapQuery || fallbackMapQuery);
+  const embedSrc = getGoogleMapsEmbedSrc(embedQuery);
 
   return (
     <section className="contact-layout">

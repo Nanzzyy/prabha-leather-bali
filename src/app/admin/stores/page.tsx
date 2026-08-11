@@ -93,7 +93,7 @@ function StoreCard({ initial, isNew, busy, onSave, onDelete }: {
         </div>
         <label className="admin-field"><span className="admin-field__label">Email</span><input type="text" inputMode="email" value={d.email} onChange={(e) => set({ email: e.target.value })} placeholder="hello@prabaleather.com" /></label>
         <label className="admin-field"><span className="admin-field__label">Address</span><input type="text" value={d.address} onChange={(e) => set({ address: e.target.value })} /></label>
-        <label className="admin-field"><span className="admin-field__label">Map query</span><input type="text" value={d.map_query} onChange={(e) => set({ map_query: e.target.value })} placeholder="Jl. Nelayan, Canggu, Bali" /></label>
+        <label className="admin-field"><span className="admin-field__label">Map query or Google Maps link</span><input type="url" value={d.map_query} onChange={(e) => set({ map_query: e.target.value })} placeholder="https://maps.app.goo.gl/... or address" /></label>
         <div className="admin-sticky-actions">
           <button type="submit" className="admin-btn admin-btn--dark" disabled={busy}><Icon>save</Icon> {isNew ? 'Add store' : 'Save changes'}</button>
           {onDelete && <button type="button" className="admin-btn admin-btn--danger" onClick={onDelete} disabled={busy}><Icon>delete</Icon> Delete</button>}

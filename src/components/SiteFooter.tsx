@@ -3,10 +3,12 @@
 import Icon from './Icon';
 import LocaleLink from './LocaleLink';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
+import { getGoogleMapsHref } from '@/lib/maps';
 
 export default function SiteFooter() {
   const { content } = useSiteContent();
   const footer = content.global.footer;
+  const mapHref = getGoogleMapsHref(footer.mapQuery, footer.locations);
   return (
     <footer className="site-footer">
       <div className="site-footer__grid">
@@ -36,7 +38,7 @@ export default function SiteFooter() {
 
         <div className="site-footer__col">
           <span>{footer.visit}</span>
-          <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(footer.mapQuery)}`} target="_blank" rel="noopener noreferrer">{footer.locations}</a>
+          <a href={mapHref} target="_blank" rel="noopener noreferrer">{footer.locations}</a>
           <a href={`tel:${footer.phoneHref}`}>{footer.phone}</a>
           <a href={`mailto:${footer.email}`}>{footer.email}</a>
         </div>
