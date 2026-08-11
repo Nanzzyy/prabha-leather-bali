@@ -11,7 +11,10 @@ import { ServiceStatusProvider } from '@/lib/service/ServiceStatusContext';
 import StorefrontGate from '@/components/StorefrontGate';
 import { buildMetadata, getLiveSeo } from '@/lib/seo/metadata';
 
-export const revalidate = 60;
+// Hostinger runs the Node server behind a CDN. Render documents per request
+// so a new deployment cannot reuse HTML with old chunk hashes.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;

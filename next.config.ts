@@ -1,20 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Vercel uses the normal Next.js runtime. Set NEXT_OUTPUT=export only for
-  // a deliberately static Hostinger build; the CMS should not depend on a
-  // separately served `out/` directory in the Vercel deployment.
-  output: process.env.NEXT_OUTPUT === 'export' || process.env.OUTPUT_MODE === 'export' ? 'export' : undefined,
+  // Hostinger's GitHub deployment runs the Next.js server. Keep one runtime
+  // output so every deployment includes the exact server/chunk manifest pair.
+  output: 'standalone',
   trailingSlash: true,
   experimental: {
     useTypeScriptCli: false,
   },
   images: {
     formats: ['image/avif', 'image/webp'],
-    // Hostinger static exports do not run the /_next/image optimizer route.
-    // Keep the optimized loader for Node deployments, but emit direct source
-    // URLs for the static build so remote CMS images remain loadable.
-    unoptimized: process.env.NEXT_OUTPUT === 'export' || process.env.OUTPUT_MODE === 'export',
+    unoptimized: false,
     minimumCacheTTL: 31536000,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -23,6 +19,17 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'assetpraba.prvtech.site' },
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
+  },
+  // Hostinger's CDN previously kept ISR HTML stale for almost a year while
+  // the deployment had already replaced its hashed chunks. Keep document
+  // Keep documents revalidating; hashed assets remain cacheable by Next.
+  async headers() {
+    return [{
+      source: '/((?!_next/static|_next/image|favicon.ico).*)',
+      headers: [
+        { key: 'Cache-Control', value: 'private, no-store, max-age=0, must-revalidate' },
+      ],
+    }];
   },
 };
 

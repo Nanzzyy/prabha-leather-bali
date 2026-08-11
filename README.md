@@ -36,23 +36,14 @@ Start development:
 npm run dev
 ```
 
-Build for Vercel (normal Next.js runtime):
+Build for Hostinger Node.js Web App / Vercel:
 
 ```bash
 npm run build
-npm run start
+npm run start:standalone
 ```
 
-For Hostinger Shared Hosting, opt into the static export explicitly:
-
-```bash
-NEXT_OUTPUT=export npm run build
-```
-
-The generated static site is then written to `out/`; upload its contents to `public_html`.
-Upload the new `_next/` directory before the HTML files, keep old hashed assets
-until the CDN cache has expired, then purge Hostinger/CDN cache. Do not deploy
-HTML from one build together with `_next/` assets from another build: that
-leaves the browser on the storefront loader when the referenced chunks return
-404. The exported `.htaccess` deliberately revalidates HTML while keeping
-hashed static assets cacheable.
+For Hostinger's GitHub-connected Node.js Web App, use branch `main`, build
+command `npm run build`, output mode `standalone`, and start command
+`npm run start:standalone`. Use `.next` as the output directory if Hostinger
+requires one. Do not upload `out/` for this deployment.

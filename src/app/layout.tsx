@@ -6,6 +6,11 @@ export const metadata: Metadata = {
   description: 'Discover Praba Leather Bali, Kuta’s premier workshop for handcrafted, custom leather goods. Bringing over 30+ years of craftsmanship to every creation, we specialize in premium leather bags, boots, and timeless accessories. Delivering unmatched Balinese artistry right in the heart of the island.',
 };
 
+// The Hostinger CDN must not cache a document from an older deployment while
+// the current deployment serves a different hashed chunk manifest.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className="light">
