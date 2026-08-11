@@ -8,7 +8,7 @@ import { fetchSupabaseRows } from '@/lib/supabase-rest';
 type SiteContentContextValue = { content: SiteContent; loading: boolean; unavailable: boolean };
 const SiteContentContext = createContext<SiteContentContextValue | null>(null);
 
-const CONTENT_TTL = 60_000;
+const CONTENT_TTL = process.env.NODE_ENV === 'development' ? 300_000 : 60_000;
 // Hard cap on the blocking loader so a slow/failed fetch can never stall the
 // page for seconds. Content normally arrives in <1s; after this we reveal the
 // bundled defaults with a degraded banner.

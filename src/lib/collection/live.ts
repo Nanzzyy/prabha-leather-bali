@@ -16,7 +16,7 @@ type RawCollectionProductGroup = {
   categories: { slug: string } | { slug: string }[] | null;
 };
 
-const GROUP_CACHE_TTL = 60_000;
+const GROUP_CACHE_TTL = process.env.NODE_ENV === 'development' ? 300_000 : 60_000;
 const groupHolder: { key: string; entry: { value: CollectionProductGroup[]; at: number } | null; inflight: Promise<CollectionProductGroup[]> | null } = { key: 'praba:groups', entry: null, inflight: null };
 
 function readStoredGroups() {

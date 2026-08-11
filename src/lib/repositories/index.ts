@@ -77,7 +77,7 @@ async function getCatalogProductsUncached() {
 const getCachedCatalogProducts = unstable_cache(
   getCatalogProductsUncached,
   ['public-catalog-products'],
-  { revalidate: 60, tags: ['public-catalog-products'] },
+  { revalidate: process.env.NODE_ENV === 'development' ? 300 : 60, tags: ['public-catalog-products'] },
 );
 
 export async function getCatalogProducts() {

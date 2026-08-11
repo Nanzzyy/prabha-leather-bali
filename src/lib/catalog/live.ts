@@ -10,7 +10,10 @@ const SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_f
 const LOOK_PRODUCT_SELECT = 'id, title, slug, base_price_usd, categories!products_category_id_fkey(slug), product_images(image_url, display_order)';
 
 const KNOWN: Product['category'][] = ['boots', 'bags', 'wallets', 'accessories', 'jackets'];
-const LIVE_CACHE_TTL = 60_000;
+// Development reloads and HMR can remount storefront readers frequently.
+// Keep the live REST payload cached longer there so development does not create
+// an avoidable Supabase egress stream. Admin saves still use explicit refreshes.
+const LIVE_CACHE_TTL = process.env.NODE_ENV === 'development' ? 300_000 : 60_000;
 
 type LiveCategoryRow = { slug?: string };
 type LiveImageRow = { image_url?: string; display_order?: number };

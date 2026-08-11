@@ -1,6 +1,6 @@
-const PROJECT_REF = 'fqygslqmhdiqypubdxkz';
+const PROJECT_REF = 'hwjzofbbdpaqmnxycewz';
 const DEFAULT_URL = `https://${PROJECT_REF}.supabase.co`;
-const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZxeWdzbHFtaGRpcXlwdWJkeGt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4NzQ1NDgsImV4cCI6MjEwMTQ1MDU0OH0.H3yfKJAWhY_ViOJTHO6kr7JTMI9N6SLK7hbjki-qXiU';
+const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3anpvZmJiZHBhcW1ueHljZXd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MjAzNDEsImV4cCI6MjEwMTk5NjM0MX0.X_gb2RkBLRc5ralVjeEs6Tu6p7Btu-lR6Y_t3DNjvqA';
 
 function clean(value: string | undefined, variableName: string): string {
   return (value ?? '')
