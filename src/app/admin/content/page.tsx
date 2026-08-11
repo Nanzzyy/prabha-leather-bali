@@ -84,6 +84,7 @@ export default function AdminContentPage() {
     try {
       await saveSiteContent(locale, section, draft[section]);
       if (section === 'global') await syncGlobalBrand(draft.global.brand);
+      try { window.sessionStorage.removeItem(`praba:content:${locale}`); } catch { /* storage can be unavailable */ }
       setSavedDraft((previous) => ({ ...(previous ?? draft), [section]: draft[section] }));
       ok(`${SECTION_LABELS[section]} content saved.`);
     } catch (error) {
@@ -352,7 +353,17 @@ function CatalogEditor({ value, onChange }: { value: SiteContent['catalog']; onC
     <div className="admin-content-form">
       <EditorCard title="Catalog hero"><StringFields values={value.hero} multilineKeys={['body']} onChange={(key, next) => onChange({ ...value, hero: { ...value.hero, [key]: next } })} /></EditorCard>
       <EditorCard title="Filters, sorting, and empty states"><StringFields values={value.ui} multilineKeys={['noPiecesBody']} onChange={(key, next) => onChange({ ...value, ui: { ...value.ui, [key]: next } })} /></EditorCard>
-      <EditorCard title="Product detail labels"><StringFields values={value.product} multilineKeys={['materialBody', 'careBody', 'shippingBody']} onChange={(key, next) => onChange({ ...value, product: { ...value.product, [key]: next } })} /></EditorCard>
+      <EditorCard title="Product detail labels"><StringFields values={{ home: value.product.home, guarantee: value.product.guarantee, handcrafted: value.product.handcrafted, shipping: value.product.shipping, rating: value.product.rating, color: value.product.color, size: value.product.size, sizeGuide: value.product.sizeGuide, emboss: value.product.emboss, embossOptional: value.product.embossOptional, embossPlaceholder: value.product.embossPlaceholder, addToPouch: value.product.addToPouch, outOfStock: value.product.outOfStock, completeKicker: value.product.completeKicker, completeTitle: value.product.completeTitle }} onChange={(key, next) => onChange({ ...value, product: { ...value.product, [key]: next } })} /></EditorCard>
+      <EditorCard title="Product detail dropdowns" description="These three settings control the expandable text panels shown on every product detail page.">
+        <FieldGrid fields={[
+          <TextField key="materialTitle" label="Quality / material dropdown title" value={value.product.materialTitle} onChange={(next) => onChange({ ...value, product: { ...value.product, materialTitle: next } })} />,
+          <TextField key="materialBody" label="Quality / material dropdown text" value={value.product.materialBody} onChange={(next) => onChange({ ...value, product: { ...value.product, materialBody: next } })} multiline />,
+          <TextField key="careTitle" label="Care dropdown title" value={value.product.careTitle} onChange={(next) => onChange({ ...value, product: { ...value.product, careTitle: next } })} />,
+          <TextField key="careBody" label="Care dropdown text" value={value.product.careBody} onChange={(next) => onChange({ ...value, product: { ...value.product, careBody: next } })} multiline />,
+          <TextField key="shippingTitle" label="Shipping dropdown title" value={value.product.shippingTitle} onChange={(next) => onChange({ ...value, product: { ...value.product, shippingTitle: next } })} />,
+          <TextField key="shippingBody" label="Shipping dropdown text" value={value.product.shippingBody} onChange={(next) => onChange({ ...value, product: { ...value.product, shippingBody: next } })} multiline />,
+        ]} />
+      </EditorCard>
       <EditorCard title="Product category labels"><StringFields values={value.categories} onChange={(key, next) => onChange({ ...value, categories: { ...value.categories, [key]: next } })} /></EditorCard>
     </div>
   );
@@ -363,8 +374,8 @@ function ContactEditor({ value, onChange }: { value: SiteContent['contact']; onC
     <div className="admin-content-form">
       <EditorCard title="Contact hero"><StringFields values={value.hero} multilineKeys={['body']} onChange={(key, next) => onChange({ ...value, hero: { ...value.hero, [key]: next } })} /></EditorCard>
       <EditorCard title="Store card labels"><StringFields values={value.labels} onChange={(key, next) => onChange({ ...value, labels: { ...value.labels, [key]: next } })} /></EditorCard>
-      <EditorCard title="WhatsApp contact"><FieldGrid fields={[
-        <TextField key="whatsappNumber" label="WhatsApp number" value={value.whatsappNumber} onChange={(next) => onChange({ ...value, whatsappNumber: next.replace(/\D/g, '') })} hint="Include country code without + or spaces." />,
+      <EditorCard title="Checkout WhatsApp" description="The number saved here receives orders from the checkout button and the contact page."><FieldGrid fields={[
+        <TextField key="whatsappNumber" label="Checkout WhatsApp number" value={value.whatsappNumber} onChange={(next) => onChange({ ...value, whatsappNumber: next.replace(/\D/g, '') })} hint="Include country code without + or spaces." />,
         <TextField key="whatsappMessage" label="Default message" value={value.whatsappMessage} onChange={(next) => onChange({ ...value, whatsappMessage: next })} multiline />,
       ]} /></EditorCard>
     </div>

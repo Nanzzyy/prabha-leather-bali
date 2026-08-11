@@ -27,8 +27,12 @@ export default function ProductDetailClient({ product: initialProduct, related }
   const fallbackVariant: ProductVariant = {
     sku: product.id, color: '—', colorHex: '#8B4513', size: '', priceAdjustment: 0, stockStatus: 'available',
   };
-  const [selectedVariantSku, setSelectedVariantSku] = useState(product.variants[0]?.sku || fallbackVariant.sku);
-  const selectedVariant = product.variants.find((variant) => variant.sku === selectedVariantSku) || product.variants[0] || fallbackVariant;
+  // Keep the color unselected until the customer explicitly chooses a swatch.
+  // Products without variants can still be added using the fallback variant.
+  const [selectedVariantSku, setSelectedVariantSku] = useState<string | null>(null);
+  const selectedVariant = selectedVariantSku
+    ? product.variants.find((variant) => variant.sku === selectedVariantSku) || null
+    : product.variants.length === 0 ? fallbackVariant : null;
   const [quantity, setQuantity] = useState(1);
   const [emboss, setEmboss] = useState('');
   const addItem = useCartStore((state) => state.addItem);
@@ -46,16 +50,19 @@ export default function ProductDetailClient({ product: initialProduct, related }
   };
 
   const chooseColor = (color: string) => {
-    const next = product.variants.find((variant) => variant.color === color && variant.size === selectedVariant.size)
+    const next = product.variants.find((variant) => variant.color === color && variant.size === selectedVariant?.size)
       || product.variants.find((variant) => variant.color === color)
-      || selectedVariant;
+      || null;
+    if (!next) return;
     setSelectedVariantSku(next.sku);
     focusVariantImage(next);
   };
   const chooseSize = (size: string) => {
-    const next = product.variants.find((variant) => variant.color === selectedVariant.color && variant.size === size)
+    if (!selectedVariant) return;
+    const next = product.variants.find((variant) => variant.color === selectedVariant?.color && variant.size === size)
       || product.variants.find((variant) => variant.size === size)
-      || selectedVariant;
+      || null;
+    if (!next) return;
     setSelectedVariantSku(next.sku);
     focusVariantImage(next);
   };
@@ -66,7 +73,7 @@ export default function ProductDetailClient({ product: initialProduct, related }
       <div className="product-detail__breadcrumbs"><LocaleLink href="/">{labels.home}</LocaleLink><Icon>chevron_right</Icon><LocaleLink href="/catalog/">{content.global.nav.catalog}</LocaleLink><Icon>chevron_right</Icon><span>{product.name}</span></div>
       <div className="product-detail__layout">
         <section className="product-gallery"><span className="guarantee"><Icon>verified</Icon> {labels.guarantee}</span><div className="product-gallery__thumbs">{product.images.map((image, index) => <button type="button" key={image} onClick={() => setActiveImage(index)} className={index === activeImage ? 'is-active' : ''}><Image src={getSupabaseImageUrl(image, { width: 240, height: 300, quality: 70, resize: 'cover' })} alt={`${product.name} view ${index + 1}`} fill sizes="80px" /></button>)}</div><div className="product-gallery__main"><Image src={getSupabaseImageUrl(product.images[activeImage] || product.images[0], { width: 1600, quality: 78 }) || ''} alt={product.name} fill priority sizes="(max-width: 900px) 100vw, 55vw" /></div></section>
-        <section className="product-info"><span className="eyebrow">{labels.handcrafted} · {product.leatherType}</span><h1>{product.name}</h1><div className="product-info__price">{formatPrice(displayedPrice)}</div><p className="product-info__shipping">{labels.shipping}</p><div className="product-rating"><span>★★★★★</span><span>{labels.rating}</span></div><fieldset className="option-group"><legend>{labels.color}: <span>{selectedVariant.color}</span></legend><div className="color-swatches color-swatches--large">{colors.map((variant) => <button type="button" key={variant.color} className={selectedVariant.color === variant.color ? 'is-selected' : ''} style={{ '--swatch': variant.colorHex || '#8B4513' } as React.CSSProperties} onClick={() => chooseColor(variant.color)} aria-label={variant.color} />)}</div></fieldset>{sizes.length > 0 && <fieldset className="option-group"><legend>{labels.size} <button type="button" className="text-link">{labels.sizeGuide}</button></legend><div className="size-options">{sizes.map((size) => <button type="button" key={size} className={selectedVariant.size === size ? 'is-selected' : ''} onClick={() => chooseSize(size as string)}>{size}</button>)}</div></fieldset>}<label className="emboss-field">{labels.emboss} <span>{labels.embossOptional}</span><input value={emboss} maxLength={12} onChange={(event) => setEmboss(event.target.value)} placeholder={labels.embossPlaceholder} /></label><div className="product-info__actions"><div className="quantity-control"><button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="Decrease quantity">−</button><span>{quantity}</span><button type="button" onClick={() => setQuantity((value) => value + 1)} aria-label="Increase quantity">+</button></div><button className="button button--dark" type="button" onClick={addToPouch} disabled={selectedVariant.stockStatus === 'out_of_stock'}>{selectedVariant.stockStatus === 'out_of_stock' ? labels.outOfStock : labels.addToPouch} <Icon>arrow_forward</Icon></button></div><div className="product-accordions"><Accordion title={labels.materialTitle} defaultOpen><p>{labels.materialBody}</p></Accordion><Accordion title={labels.careTitle}><p>{labels.careBody}</p></Accordion><Accordion title={labels.shippingTitle}><p>{labels.shippingBody}</p></Accordion></div></section>
+        <section className="product-info"><span className="eyebrow">{labels.handcrafted} · {product.leatherType}</span><h1>{product.name}</h1><div className="product-info__price">{formatPrice(displayedPrice)}</div><p className="product-info__shipping">{labels.shipping}</p><div className="product-rating"><span>★★★★★</span><span>{labels.rating}</span></div><fieldset className="option-group"><legend>{labels.color}: <span>{selectedVariant?.color || 'Select a color'}</span></legend><div className="color-swatches color-swatches--large">{colors.map((variant) => <button type="button" key={variant.color} className={selectedVariant?.color === variant.color ? 'is-selected' : ''} style={{ '--swatch': variant.colorHex || '#8B4513' } as React.CSSProperties} onClick={() => chooseColor(variant.color)} aria-label={variant.color} />)}</div></fieldset>{sizes.length > 0 && <fieldset className="option-group"><legend>{labels.size} <button type="button" className="text-link">{labels.sizeGuide}</button></legend><div className="size-options">{sizes.map((size) => <button type="button" key={size} className={selectedVariant?.size === size ? 'is-selected' : ''} onClick={() => chooseSize(size as string)} disabled={!selectedVariant}>{size}</button>)}</div></fieldset>}<label className="emboss-field">{labels.emboss} <span>{labels.embossOptional}</span><input value={emboss} maxLength={12} onChange={(event) => setEmboss(event.target.value)} placeholder={labels.embossPlaceholder} /></label><div className="product-info__actions"><div className="quantity-control"><button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="Decrease quantity">−</button><span>{quantity}</span><button type="button" onClick={() => setQuantity((value) => value + 1)} aria-label="Increase quantity">+</button></div><button className="button button--dark" type="button" onClick={addToPouch} disabled={!selectedVariant || selectedVariant.stockStatus === 'out_of_stock'}>{!selectedVariant ? 'Select a color' : selectedVariant.stockStatus === 'out_of_stock' ? labels.outOfStock : labels.addToPouch} <Icon>arrow_forward</Icon></button></div><div className="product-accordions"><Accordion title={labels.materialTitle} defaultOpen><p>{labels.materialBody}</p></Accordion><Accordion title={labels.careTitle}><p>{labels.careBody}</p></Accordion><Accordion title={labels.shippingTitle}><p>{labels.shippingBody}</p></Accordion></div></section>
       </div>
       <section className="complete-look"><div className="section-heading section-heading--center"><span className="eyebrow">{labels.completeKicker}</span><h2>{labels.completeTitle}</h2></div><div className="complete-look__grid">{related.slice(0, 3).map((item) => <ProductCard compact key={item.id} product={item} showOrderAction={false} />)}</div></section>
     </>

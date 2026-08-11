@@ -7,7 +7,7 @@ interface CustomerData {
 }
 
 const BRAND_NAME = "Praba Leather Bali";
-const ADMIN_PHONE = "6281234567890"; // Ganti dengan nomor WhatsApp admin yang sebenarnya
+const FALLBACK_ADMIN_PHONE = '6281804595666';
 
 export function formatUSD(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -25,7 +25,7 @@ export function formatRupiah(amount: number): string {
   }).format(amount);
 }
 
-export function generateWhatsAppPayload(cartItems: CartItem[], customer: CustomerData): string {
+export function generateWhatsAppPayload(cartItems: CartItem[], customer: CustomerData, adminPhone: string): string {
   const name = customer.name.trim();
   const destination = customer.destination.trim();
   const notes = customer.notes?.trim();
@@ -56,6 +56,7 @@ export function generateWhatsAppPayload(cartItems: CartItem[], customer: Custome
 
   message += `Could you please confirm availability, personalization, and shipping options?\n\nThank you!\n${name || 'A Praba Leather customer'} — ${BRAND_NAME}`;
 
+  const phone = adminPhone.replace(/\D/g, '') || FALLBACK_ADMIN_PHONE;
   const encodedMessage = encodeURIComponent(message);
-  return `https://wa.me/${ADMIN_PHONE}?text=${encodedMessage}`;
+  return `https://wa.me/${phone}?text=${encodedMessage}`;
 }

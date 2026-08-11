@@ -36,7 +36,7 @@ export default function CartDrawer() {
 
   const checkout = () => {
     if (!name.trim() || !destination.trim() || items.length === 0) return;
-    window.open(generateWhatsAppPayload(items, { name, destination, notes }), '_blank', 'noopener,noreferrer');
+    window.open(generateWhatsAppPayload(items, { name, destination, notes }, content.contact.whatsappNumber), '_blank', 'noopener,noreferrer');
   };
 
   return (
