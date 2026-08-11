@@ -14,25 +14,26 @@ export function useSession(): { session: Session | null; loading: boolean } {
     let mounted = true;
     if (!adminSupabase) return () => { mounted = false; };
 
-    // Storage can contain an expired or corrupt refresh token. Resolve the
-    // guard on both success and failure so the UI never spins forever.
-    void adminSupabase.auth.getSession()
-      .then(({ data }) => {
-        if (!mounted) return;
-        setSession(data.session);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setSession(null);
-        setLoading(false);
-      });
-    const { data: sub } = adminSupabase.auth.onAuthStateChange((_event, next) => {
-      if (!mounted) return;
+    // Storage can contain an expired or corrupt refresh token. Also cap the
+    // initial network read: a stalled Auth request must never leave the whole
+    // dashboard behind its loading screen indefinitely.
+    let initialResolved = false;
+    const finishInitialSession = (next: Session | null) => {
+      if (!mounted || initialResolved) return;
+      initialResolved = true;
+      window.clearTimeout(sessionTimeout);
       setSession(next);
       setLoading(false);
+    };
+    const sessionTimeout = window.setTimeout(() => finishInitialSession(null), 8000);
+
+    void adminSupabase.auth.getSession()
+      .then(({ data }) => finishInitialSession(data.session))
+      .catch(() => finishInitialSession(null));
+    const { data: sub } = adminSupabase.auth.onAuthStateChange((_event, next) => {
+      finishInitialSession(next);
     });
-    return () => { mounted = false; sub.subscription.unsubscribe(); };
+    return () => { mounted = false; window.clearTimeout(sessionTimeout); sub.subscription.unsubscribe(); };
   }, []);
 
   return { session, loading };
