@@ -50,3 +50,9 @@ NEXT_OUTPUT=export npm run build
 ```
 
 The generated static site is then written to `out/`; upload its contents to `public_html`.
+Upload the new `_next/` directory before the HTML files, keep old hashed assets
+until the CDN cache has expired, then purge Hostinger/CDN cache. Do not deploy
+HTML from one build together with `_next/` assets from another build: that
+leaves the browser on the storefront loader when the referenced chunks return
+404. The exported `.htaccess` deliberately revalidates HTML while keeping
+hashed static assets cacheable.

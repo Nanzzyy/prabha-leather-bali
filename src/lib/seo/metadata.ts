@@ -3,6 +3,7 @@ import { getDefaultContent, mergeSiteContent, type SeoPageKey, type SiteSeo } fr
 import { isValidLang, type Lang } from '@/lib/i18n/dictionaries';
 import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase-config';
 import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
+import { fetchWithTimeout } from '@/lib/fetch-with-timeout';
 
 const FALLBACK_SITE_URL = 'https://prabaleather.com';
 
@@ -44,10 +45,10 @@ export async function getLiveSeo(lang: Lang): Promise<SiteSeo> {
     endpoint.searchParams.set('locale', `eq.${lang}`);
     endpoint.searchParams.set('section', 'eq.global');
     endpoint.searchParams.set('limit', '1');
-    const response = await fetch(endpoint, {
+    const response = await fetchWithTimeout(endpoint, {
       headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` },
       next: { revalidate: 60, tags: [`site-seo-${lang}`] },
-    });
+    }, 2500);
     if (!response.ok) return fallback;
     const rows = await response.json() as Array<{ content?: { seo?: Partial<SiteSeo> } }>;
     return mergeSiteContent(fallback, rows[0]?.content?.seo as never);

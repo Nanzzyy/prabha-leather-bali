@@ -36,3 +36,12 @@ ErrorDocument 404 /404.html
   ExpiresByType image/ico "access plus 1 year"
   ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
+
+# HTML must be revalidated after a deployment. Hashed Next.js assets can stay
+# cached for a year, but caching HTML indefinitely can mix build manifests and
+# make the browser request chunks that no longer exist.
+<FilesMatch "\.(html|txt)$">
+  Header always set Cache-Control "no-cache, no-store, must-revalidate"
+  Header always set Pragma "no-cache"
+  Header always set Expires "0"
+</FilesMatch>

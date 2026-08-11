@@ -64,6 +64,13 @@ async function getCatalogProductsUncached() {
     } catch (error) {
       console.warn('Supabase catalog unavailable; using local catalog fallback.', error);
     }
+
+    // A public storefront must never wait for a second database connection
+    // after the public Supabase read has already failed. In production that
+    // fallback can be a cold/private Postgres host and add another 10 seconds
+    // to the first request. The bundled catalog keeps the page usable while
+    // the CMS recovers; admin/database workflows remain unchanged.
+    if (process.env.NODE_ENV === 'production') return catalogProducts;
   }
 
   const databaseProducts = await getProductRepository().getAllProducts();
