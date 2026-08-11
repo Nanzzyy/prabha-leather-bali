@@ -350,22 +350,62 @@ export async function uploadImage(file: File, folder = 'products'): Promise<Admi
   const uploadFile = await compressImageForUpload(file);
   const ext = uploadFile.name.split('.').pop()?.toLowerCase() || 'jpg';
   const path = `${folder}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, uploadFile, {
-    contentType: uploadFile.type || `image/${ext}`,
-    // Uploaded paths are UUID-based and never overwritten, so a long browser
-    // cache is safe and prevents repeat downloads of immutable assets.
-    cacheControl: '31536000',
-    upsert: false,
+  const uploadUrl = process.env.NEXT_PUBLIC_R2_UPLOAD_URL?.trim().replace(/\/$/, '');
+  if (!uploadUrl) {
+    throw new Error('R2 upload belum dikonfigurasi. Tambahkan NEXT_PUBLIC_R2_UPLOAD_URL lalu build ulang website.');
+  }
+
+  const { data: sessionData, error: sessionError } = await sb.auth.getSession();
+  if (sessionError) throw sessionError;
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) throw new Error('Sesi admin tidak ditemukan. Silakan login ulang.');
+
+  const response = await fetch(`${uploadUrl}/upload`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': uploadFile.type || `image/${ext}`,
+      'X-R2-Path': path,
+    },
+    body: uploadFile,
   });
-  if (error) throw error;
-  const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-  return { image_url: data.publicUrl, is_primary: false, display_order: 0 };
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(detail || `R2 upload failed (${response.status}).`);
+  }
+  const result = await response.json() as { image_url?: string };
+  if (!result.image_url) throw new Error('R2 upload berhasil tetapi URL gambar tidak diterima.');
+  return { image_url: result.image_url, is_primary: false, display_order: 0 };
 }
 
 export async function deleteImageByUrl(url: string): Promise<void> {
   const sb = requireClient();
-  // ponytail: derives the storage object path from the public URL; breaks only
-  // if Supabase changes the /object/public/<bucket>/ URL contract.
+  const r2UploadUrl = process.env.NEXT_PUBLIC_R2_UPLOAD_URL?.trim().replace(/\/$/, '');
+  const r2PublicBaseUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_BASE_URL?.trim().replace(/\/$/, '');
+  if (r2UploadUrl && r2PublicBaseUrl) {
+    try {
+      const imageUrl = new URL(url);
+      const publicUrl = new URL(r2PublicBaseUrl);
+      if (imageUrl.origin === publicUrl.origin) {
+        const { data: sessionData, error: sessionError } = await sb.auth.getSession();
+        if (sessionError) throw sessionError;
+        const accessToken = sessionData.session?.access_token;
+        if (!accessToken) throw new Error('Sesi admin tidak ditemukan. Silakan login ulang.');
+        const response = await fetch(`${r2UploadUrl}/delete`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: decodeURIComponent(imageUrl.pathname.replace(/^\//, '')) }),
+        });
+        if (!response.ok) throw new Error((await response.text().catch(() => '')) || `R2 delete failed (${response.status}).`);
+        return;
+      }
+    } catch (error) {
+      if (error instanceof Error && /R2|Sesi admin|session|delete failed/i.test(error.message)) throw error;
+    }
+  }
+
+  // Backward-compatible cleanup for images that still live in Supabase.
+  // This branch can be removed after the asset migration is complete.
   const marker = `/object/public/${STORAGE_BUCKET}/`;
   const idx = url.indexOf(marker);
   if (idx === -1) return;
