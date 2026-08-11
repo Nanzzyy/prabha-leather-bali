@@ -95,7 +95,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
-        const img = await uploadImage(file);
+        const img = await uploadImage(file, 'products');
         setImages((prev) => [...prev, img]);
       }
     } catch (e) {

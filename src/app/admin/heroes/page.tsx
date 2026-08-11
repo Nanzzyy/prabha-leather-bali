@@ -26,7 +26,7 @@ export default function AdminHeroesPage() {
     setBusy(true);
     try {
       for (const file of Array.from(files)) {
-        const img = await uploadImage(file);
+        const img = await uploadImage(file, 'heroes');
         await addHero(img.image_url);
       }
       ok('Hero image(s) added.');
