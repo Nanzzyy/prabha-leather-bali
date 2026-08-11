@@ -12,6 +12,7 @@
 4. Output akhir bisa di-export statis (`output: 'export'`) atau Dockerized, tergantung env.
 
 ## Latest Updates
+- **[11 Aug 2026]** Deferred the closed cart drawer into an on-demand client chunk and changed Google Fonts loading to a low-priority non-blocking preload, reducing critical storefront JavaScript and render-blocking work without changing the checkout flow.
 - **[11 Aug 2026]** Google Maps store links now accept `maps.app.goo.gl` and other Google Maps URLs. The original share link is preserved for navigation, while short links resolve to coordinates for the embedded map with an address fallback.
 - **[11 Aug 2026]** Mobile performance refinement: product cards now advertise their real two-column mobile width to prevent oversized image candidates, non-critical hover images use low-priority lazy loading, below-the-fold homepage/footer sections use `content-visibility`, and costly sticky/mobile backdrop blurs are disabled on narrow screens. Deployment and CMS cache safeguards remain unchanged.
 - **[10 Aug 2026]** Storefront performance pass: removed `supabase-js` from the initial browser bundle by using a small public REST reader, deferred CMS refresh chunks until after first paint, split the collection mega-menu, removed the render-blocking Google Fonts stylesheet, and delayed adjacent hero image loading. Static production build and mobile browser smoke test pass.

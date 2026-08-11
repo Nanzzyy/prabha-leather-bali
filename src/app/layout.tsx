@@ -21,8 +21,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           dangerouslySetInnerHTML={{
             __html: `(() => {
               const link = document.createElement('link');
-              link.rel = 'stylesheet';
+              link.rel = 'preload';
+              link.as = 'style';
+              link.fetchPriority = 'low';
               link.href = 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap';
+              link.onload = () => { link.rel = 'stylesheet'; link.onload = null; };
+              link.onerror = () => { link.rel = 'stylesheet'; };
               document.head.appendChild(link);
 
               // Host caches can briefly serve HTML from one build with assets

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import CartDrawer from '@/components/CartDrawer';
 import SiteFooter from '@/components/SiteFooter';
 import SiteHeader from '@/components/SiteHeader';
 import { CurrencyProvider } from '@/lib/currency/CurrencyContext';
@@ -9,6 +8,7 @@ import { isValidLang, LANGS } from '@/lib/i18n/dictionaries';
 import { SiteContentProvider } from '@/lib/content/SiteContentContext';
 import { ServiceStatusProvider } from '@/lib/service/ServiceStatusContext';
 import StorefrontGate from '@/components/StorefrontGate';
+import LazyCartDrawer from '@/components/LazyCartDrawer';
 import { buildMetadata, getLiveSeo } from '@/lib/seo/metadata';
 
 // Hostinger runs the Node server behind a CDN. Render documents per request
@@ -38,7 +38,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               <SiteHeader />
               {children}
               <SiteFooter />
-              <CartDrawer />
+              <LazyCartDrawer />
             </StorefrontGate>
           </ServiceStatusProvider>
         </SiteContentProvider>
