@@ -6,7 +6,7 @@ import { fetchSupabaseRows } from '@/lib/supabase-rest';
 // mapping in src/lib/repositories/index.ts so the storefront shape stays identical.
 // Returns null on any failure so callers fall back to the build-time prop.
 
-const SELECT = 'id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
+const SELECT = 'id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, description, image_url, stock_status)';
 const LOOK_PRODUCT_SELECT = 'id, title, slug, base_price_usd, categories!products_category_id_fkey(slug), product_images(image_url, display_order)';
 
 const KNOWN: Product['category'][] = ['boots', 'bags', 'wallets', 'accessories', 'jackets'];
@@ -17,7 +17,7 @@ const LIVE_CACHE_TTL = process.env.NODE_ENV === 'development' ? 300_000 : 60_000
 
 type LiveCategoryRow = { slug?: string };
 type LiveImageRow = { image_url?: string; display_order?: number };
-type LiveVariantRow = { sku?: string; color_name?: string; color_hex?: string | null; size_eu?: string | number | null; image_url?: string | null; stock_status?: Product['variants'][number]['stockStatus'] };
+type LiveVariantRow = { sku?: string; color_name?: string; color_hex?: string | null; size_eu?: string | number | null; description?: string | null; image_url?: string | null; stock_status?: Product['variants'][number]['stockStatus'] };
 type LiveProductRow = {
   id: string;
   title: string;
@@ -106,6 +106,7 @@ export function mapLiveProductRow(row: LiveProductRow): Product {
       color: v.color_name || '',
       colorHex: v.color_hex || undefined,
       size: v.size_eu == null ? undefined : String(v.size_eu),
+      description: v.description?.trim() || undefined,
       image: v.image_url || undefined,
       priceAdjustment: 0,
       stockStatus: v.stock_status || 'available',

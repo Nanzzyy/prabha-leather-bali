@@ -51,8 +51,11 @@ create table if not exists public.product_variants (
   color_name varchar(50) not null,
   color_hex varchar(10),
   size_eu varchar(10),
+  description text,
   stock_status varchar(20) not null default 'available' check (stock_status in ('available', 'preorder', 'out_of_stock'))
 );
+
+alter table public.product_variants add column if not exists description text;
 
 create index if not exists products_category_id_idx on public.products(category_id);
 create index if not exists products_featured_idx on public.products(is_featured) where is_featured = true;

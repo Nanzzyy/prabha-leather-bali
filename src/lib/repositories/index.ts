@@ -35,7 +35,7 @@ async function getCatalogProductsUncached() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)')
+        .select('id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, description, image_url, stock_status)')
         .order('is_featured', { ascending: false });
 
       if (!error && data?.length) {
@@ -62,6 +62,7 @@ async function getCatalogProductsUncached() {
             color: item.color_name,
             colorHex: item.color_hex || undefined,
             size: item.size_eu || undefined,
+            description: item.description || undefined,
             image: item.image_url || undefined,
             priceAdjustment: 0,
             stockStatus: item.stock_status,

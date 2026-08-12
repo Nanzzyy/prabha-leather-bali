@@ -23,6 +23,7 @@ export interface AdminVariant {
   color_name: string;
   color_hex?: string | null;
   size_eu?: string | null;
+  description?: string | null;
   image_url?: string | null;
   stock_status: StockStatus;
 }
@@ -91,7 +92,7 @@ type AdminProductRow = {
   created_at: string;
   categories?: { id?: string; slug?: string } | { id?: string; slug?: string }[] | null;
   product_images?: Array<{ id?: string; image_url: string; is_primary?: boolean; display_order?: number }> | null;
-  product_variants?: Array<{ id?: string; sku: string; color_name: string; color_hex?: string | null; size_eu?: string | null; image_url?: string | null; stock_status: StockStatus }> | null;
+  product_variants?: Array<{ id?: string; sku: string; color_name: string; color_hex?: string | null; size_eu?: string | null; description?: string | null; image_url?: string | null; stock_status: StockStatus }> | null;
 };
 
 function requireClient() {
@@ -123,7 +124,7 @@ function mapProduct(row: AdminProductRow): AdminProduct {
       .map((i) => ({ id: i.id, image_url: i.image_url, is_primary: Boolean(i.is_primary), display_order: Number(i.display_order ?? 0) })),
     variants: (row.product_variants ?? []).map((v) => ({
       id: v.id, sku: v.sku, color_name: v.color_name, color_hex: v.color_hex ?? null,
-      size_eu: v.size_eu ?? null, image_url: v.image_url ?? null, stock_status: v.stock_status,
+      size_eu: v.size_eu ?? null, description: v.description ?? null, image_url: v.image_url ?? null, stock_status: v.stock_status,
     })),
   };
 }
@@ -132,7 +133,7 @@ const PRODUCT_SELECT = `
   id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, created_at,
   categories!products_category_id_fkey ( id, name, slug ),
   product_images ( id, image_url, is_primary, display_order ),
-  product_variants ( id, sku, color_name, color_hex, size_eu, image_url, stock_status )
+  product_variants ( id, sku, color_name, color_hex, size_eu, description, image_url, stock_status )
 `;
 
 export async function listCategories(): Promise<AdminCategory[]> {
@@ -202,7 +203,7 @@ export async function saveProduct(input: ProductInput): Promise<string> {
   if (input.variants.length) {
     const variants = input.variants.map((v) => ({
       product_id: id, sku: v.sku.trim(), color_name: v.color_name.trim() || 'Default',
-      color_hex: v.color_hex || null, size_eu: v.size_eu || null, image_url: v.image_url || null, stock_status: v.stock_status,
+      color_hex: v.color_hex || null, size_eu: v.size_eu || null, description: v.description?.trim() || null, image_url: v.image_url || null, stock_status: v.stock_status,
     }));
     const { error } = await sb.from('product_variants').insert(variants);
     if (error) throw error;

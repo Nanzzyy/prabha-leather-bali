@@ -367,6 +367,7 @@
 .admin-variant__heading span { overflow: hidden; color: var(--muted); font-size: 0.76rem; text-overflow: ellipsis; white-space: nowrap; }
 .admin-variant__stock { display: grid; gap: 0.25rem; }
 .admin-variant__image { display: grid; grid-column: span 3; gap: 0.25rem; min-width: 0; }
+.admin-variant__description { display: grid; grid-column: 1 / -1; gap: 0.25rem; }
 .admin-variant__image-preview { display: flex; align-items: center; gap: 0.5rem; min-width: 0; margin-top: 0.2rem; color: var(--muted); font-size: 0.72rem; }
 .admin-variant__image-preview img { width: 32px; height: 32px; flex: 0 0 auto; border-radius: 5px; object-fit: cover; }
 .admin-variant__image-preview span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

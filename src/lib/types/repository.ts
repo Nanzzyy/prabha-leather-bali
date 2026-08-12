@@ -3,6 +3,7 @@ export interface ProductVariant {
   color: string;
   colorHex?: string;
   size?: string;
+  description?: string | null;
   image?: string;
   priceAdjustment: number;
   stockStatus: 'available' | 'preorder' | 'out_of_stock';

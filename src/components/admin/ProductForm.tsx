@@ -13,7 +13,7 @@ import {
 } from '@/lib/admin/queries';
 
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-const emptyVariant = (): AdminVariant => ({ sku: '', color_name: '', color_hex: '#8B4513', size_eu: '', image_url: '', stock_status: 'available' });
+const emptyVariant = (): AdminVariant => ({ sku: '', color_name: '', color_hex: '#8B4513', size_eu: '', description: '', image_url: '', stock_status: 'available' });
 type SpecificationKey = 'material' | 'care' | 'shipping';
 type SpecificationDraft = { useDefault: boolean; title: string; body: string };
 type SpecificationDrafts = Record<SpecificationKey, SpecificationDraft>;
@@ -270,6 +270,11 @@ export default function ProductForm({ productId }: { productId?: string }) {
               <div>
                 <span className="admin-variant__label">Size (EU)</span>
                 <input type="text" value={v.size_eu || ''} onChange={(e) => setVariant(i, { size_eu: e.target.value })} placeholder="42" />
+              </div>
+              <div className="admin-variant__description">
+                <span className="admin-variant__label">Variant description (optional)</span>
+                <textarea value={v.description || ''} onChange={(e) => setVariant(i, { description: e.target.value })} placeholder="Shown when this color/size is selected" rows={3} />
+                <span className="admin-field__hint">Displayed on the product page after the customer selects this variant.</span>
               </div>
               <div className="admin-variant__image">
                 <span className="admin-variant__label">Variant image (optional)</span>
