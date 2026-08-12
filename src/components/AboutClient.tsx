@@ -17,7 +17,11 @@ export default function AboutClient() {
   const { content } = useSiteContent();
   const about = content.about;
   return <main className="about-page">
-    <section className="about-hero"><span className="eyebrow">{about.hero.eyebrow}</span><h1>{about.hero.title}</h1></section>
+    <section className="about-hero">
+      {about.hero.image.image_url && <Image className="about-hero__image" src={getSupabaseImageUrl(about.hero.image.image_url, { width: 1920, quality: 72 })} alt={about.hero.image.alt} fill priority sizes="100vw" />}
+      <div className="about-hero__overlay" aria-hidden="true" />
+      <div className="about-hero__content"><span className="eyebrow">{about.hero.eyebrow}</span><h1>{about.hero.title}</h1></div>
+    </section>
 
     <section className="about-features">{about.features.map((feature) => <article key={feature.title} className="about-feature"><span className="about-feature__icon"><Icon>{feature.icon}</Icon></span><h3>{feature.title}</h3><p>{feature.body}</p></article>)}</section>
 

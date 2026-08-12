@@ -34,7 +34,7 @@ export type SiteContent = {
     header: { search: string; searchPlaceholder: string; pouch: string };
     footer: { brand: string; tagline: string; explore: string; service: string; visit: string; ourStory: string; contact: string; shipping: string; careGuide: string; locations: string; mapQuery: string; handcrafted: string; rights: string; privacy: string; privacyHref: string; terms: string; termsHref: string; cookies: string; cookiesHref: string; phone: string; phoneHref: string; email: string; whatsapp: string; instagram: string };
     seo: SiteSeo;
-    cart: { title: string; item: string; items: string; close: string; emptyTitle: string; emptyBody: string; exploreCatalog: string; almostYours: string; orderDetails: string; fullName: string; delivery: string; notes: string; subtotal: string; estimatedShipping: string; calculatedViaWhatsapp: string; continueOrder: string; clearPouch: string; confirmation: string };
+    cart: { title: string; item: string; items: string; close: string; emptyTitle: string; emptyBody: string; exploreCatalog: string; almostYours: string; orderDetails: string; fullName: string; fullNamePlaceholder: string; delivery: string; deliveryPlaceholder: string; notes: string; notesPlaceholder: string; subtotal: string; estimatedShipping: string; calculatedViaWhatsapp: string; continueOrder: string; clearPouch: string; confirmation: string; sizePrefix: string; customStampPrefix: string };
   };
   home: {
     introEyebrow: string; introH1a: string; introH1b: string; introBody: string; introCta: string;
@@ -51,7 +51,7 @@ export type SiteContent = {
   catalog: {
     hero: { eyebrow: string; h1a: string; h1b: string; body: string };
     ui: { filter: string; refine: string; searchPlaceholder: string; reset: string; productType: string; leatherGrade: string; color: string; priceRange: string; subcategory: string; allSubcategories: string; allTypes: string; allGrades: string; showing: string; piecesFound: string; noPieces: string; noPiecesBody: string; resetFilters: string; sortBy: string; featured: string; priceLow: string; priceHigh: string; loadMore: string; trendingKicker: string; trendingTitle: string; shopByKind: string; pieces: string; chooseDensity: string; gridLabel: string };
-    product: { home: string; guarantee: string; handcrafted: string; shipping: string; rating: string; color: string; size: string; sizeGuide: string; emboss: string; embossOptional: string; embossPlaceholder: string; addToPouch: string; outOfStock: string; materialTitle: string; materialBody: string; careTitle: string; careBody: string; shippingTitle: string; shippingBody: string; completeKicker: string; completeTitle: string };
+    product: { home: string; guarantee: string; handcrafted: string; shipping: string; rating: string; color: string; colorPlaceholder: string; size: string; sizeGuide: string; emboss: string; embossOptional: string; embossPlaceholder: string; addToPouch: string; outOfStock: string; materialTitle: string; materialBody: string; careTitle: string; careBody: string; shippingTitle: string; shippingBody: string; completeKicker: string; completeTitle: string };
     categories: Record<string, string>;
   };
   contact: {
@@ -60,7 +60,7 @@ export type SiteContent = {
     whatsappNumber: string; whatsappMessage: string;
   };
   about: {
-    hero: { eyebrow: string; title: string };
+    hero: { eyebrow: string; title: string; image: ContentImage };
     features: AboutFeature[];
     beginning: { eyebrow: string; title: string; body1: string; body2: string; image: ContentImage };
     belief: { eyebrow: string; title: string; body1: string; body2: string; image: ContentImage };
@@ -105,7 +105,7 @@ const en: SiteContent = {
       },
     },
     footer: { brand: 'PRABA LEATHER BALI', tagline: 'A small house of Balinese artisans crafting full-grain leather goods made to carry your story — slowly, honestly, by hand.', explore: 'Explore', service: 'Service', visit: 'Visit', ourStory: 'Our Story', contact: 'Contact', shipping: 'Shipping & Returns', careGuide: 'Care Guide', locations: '', mapQuery: '', handcrafted: 'Handcrafted in Bali, Indonesia · A workshop of Balinese artisans.', rights: 'All rights reserved.', privacy: 'Privacy Policy', privacyHref: '/privacy/', terms: 'Terms of Service', termsHref: '/terms/', cookies: 'Cookies', cookiesHref: '/cookies/', phone: '', phoneHref: '', email: '', whatsapp: '', instagram: '' },
-    cart: { title: 'Your Order Pouch', item: 'item', items: 'items', close: 'Close order pouch', emptyTitle: 'Your pouch is empty', emptyBody: 'Explore the collection and save a piece for your next story.', exploreCatalog: 'Explore catalog', almostYours: 'Almost yours', orderDetails: 'Order Details', fullName: 'Your full name', delivery: 'Delivery address / country', notes: 'Special notes for artisan', subtotal: 'Subtotal', estimatedShipping: 'Estimated shipping', calculatedViaWhatsapp: 'Calculated via WhatsApp', continueOrder: 'Continue Order to WhatsApp', clearPouch: 'Clear pouch', confirmation: 'We’ll confirm availability and shipping costs with you directly.' },
+    cart: { title: 'Your Order Pouch', item: 'item', items: 'items', close: 'Close order pouch', emptyTitle: 'Your pouch is empty', emptyBody: 'Explore the collection and save a piece for your next story.', exploreCatalog: 'Explore catalog', almostYours: 'Almost yours', orderDetails: 'Order Details', fullName: 'Your full name', fullNamePlaceholder: 'Alexander Pierce', delivery: 'Delivery address / country', deliveryPlaceholder: 'Sydney, Australia', notes: 'Special notes for artisan', notesPlaceholder: 'Any specific requests?', subtotal: 'Subtotal', estimatedShipping: 'Estimated shipping', calculatedViaWhatsapp: 'Calculated via WhatsApp', continueOrder: 'Continue Order to WhatsApp', clearPouch: 'Clear pouch', confirmation: 'We’ll confirm availability and shipping costs with you directly.', sizePrefix: 'Size: EU', customStampPrefix: 'Custom stamp:' },
   },
   home: {
     introEyebrow: 'The Praba point of view', introH1a: 'Crafted for journeys,', introH1b: 'built for character.', introBody: 'Rooted in Kuta, Bali. Over 30+ years of craftsmanship bringing you 100% genuine leather bags, boots, and sandals at the best value on the island.', introCta: 'Explore the collection',
@@ -132,7 +132,7 @@ const en: SiteContent = {
   catalog: {
     hero: { eyebrow: 'The collection', h1a: 'The Handcrafted', h1b: 'Collection', body: 'Each piece is a study in natural texture, considered utility, and the quiet confidence of something made well.' },
     ui: { filter: 'Filter', refine: 'Refine selection', searchPlaceholder: 'Search pieces', reset: 'Reset', productType: 'Product type', leatherGrade: 'Leather grade', color: 'Color', priceRange: 'Price range', subcategory: 'Subcategory', allSubcategories: 'All pieces', allTypes: 'All types', allGrades: 'All grades', showing: 'Showing the collection', piecesFound: 'pieces found', noPieces: 'No pieces found', noPiecesBody: 'Try widening your filters to discover more of the collection.', resetFilters: 'Reset filters', sortBy: 'Sort by', featured: 'Featured', priceLow: 'Price: Low to high', priceHigh: 'Price: High to low', loadMore: 'Load more pieces', trendingKicker: 'Most wanted', trendingTitle: 'Trending now', shopByKind: 'Shop by kind', pieces: 'pieces', chooseDensity: 'Choose product density', gridLabel: 'Show a product grid' },
-    product: { home: 'Home', guarantee: '100% Genuine Leather Guarantee', handcrafted: 'Handcrafted in Bali', shipping: 'Free express shipping within Indonesia', rating: '5.0 · 24 artisan reviews', color: 'Color', size: 'Size (EU)', sizeGuide: 'Size guide', emboss: 'Add custom initials stamp', embossOptional: '(optional)', embossPlaceholder: "e.g. 'A.P'", addToPouch: 'Deal & Order via WhatsApp', outOfStock: 'Out of stock', materialTitle: 'Material specifications', materialBody: 'Crafted from 100% full-grain cowhide, featuring durable hand stitching and solid brass hardware.', careTitle: 'Leather care & patina guide', careBody: 'Wipe clean with a damp cloth. Condition quarterly with natural beeswax to maintain moisture and encourage a rich, unique patina.', shippingTitle: 'Shipping & international delivery', shippingBody: 'Free express shipping within Indonesia. International shipping is calculated at checkout via DHL Express.', completeKicker: 'Considered companions', completeTitle: 'Complete The Look' },
+    product: { home: 'Home', guarantee: '100% Genuine Leather Guarantee', handcrafted: 'Handcrafted in Bali', shipping: 'Free express shipping within Indonesia', rating: '5.0 · 24 artisan reviews', color: 'Color', colorPlaceholder: 'Select a color', size: 'Size (EU)', sizeGuide: 'Size guide', emboss: 'Add custom initials stamp', embossOptional: '(optional)', embossPlaceholder: "e.g. 'A.P'", addToPouch: 'Deal & Order via WhatsApp', outOfStock: 'Out of stock', materialTitle: 'Material specifications', materialBody: 'Crafted from 100% full-grain cowhide, featuring durable hand stitching and solid brass hardware.', careTitle: 'Leather care & patina guide', careBody: 'Wipe clean with a damp cloth. Condition quarterly with natural beeswax to maintain moisture and encourage a rich, unique patina.', shippingTitle: 'Shipping & international delivery', shippingBody: 'Free express shipping within Indonesia. International shipping is calculated at checkout via DHL Express.', completeKicker: 'Considered companions', completeTitle: 'Complete The Look' },
     categories: { all: 'All types', boots: 'Footwear', bags: 'Bags', wallets: 'Wallets', accessories: 'Accessories', jackets: 'Jackets' },
   },
   contact: {
@@ -141,7 +141,7 @@ const en: SiteContent = {
     whatsappNumber: '', whatsappMessage: '',
   },
   about: {
-    hero: { eyebrow: 'Our story', title: 'About Us' },
+    hero: { eyebrow: 'Our story', title: 'About Us', image: { image_url: '/samples/sample-hover.jpeg', alt: 'Praba Leather Bali atelier and handcrafted leather goods' } },
     features: [
       { icon: 'palette', title: 'A wide palette of hides & hues', body: 'Full-grain leathers in tones chosen to quietly carry your individuality — never loud, always yours.' },
       { icon: 'handyman', title: 'Hand-stitched in Bali', body: 'Cut and sewn by Balinese artisans who pour patience and pride into every single seam.' },
