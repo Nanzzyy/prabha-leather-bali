@@ -4,8 +4,9 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 
 export type CurrencyCode = 'USD' | 'IDR';
 
-// ponytail: static conversion rate. Swap for a live FX source when the store needs accuracy.
-const RATE_TO_IDR = 15700;
+// Static presentation rate used for storefront pricing. Final payment and
+// shipping amounts are confirmed by the team before an order is completed.
+const RATE_TO_IDR = 18000;
 
 const META: Record<CurrencyCode, { locale: string; label: string }> = {
   USD: { locale: 'en-US', label: 'USD' },
