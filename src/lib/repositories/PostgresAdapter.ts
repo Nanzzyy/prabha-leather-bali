@@ -23,7 +23,9 @@ export class PostgresAdapter implements IProductRepository {
     try {
       client = await pool.connect();
       const result = await client.query(`
-        SELECT p.id, p.title, p.slug, p.description, p.leather_type, p.base_price_usd,
+        SELECT p.id, p.title, p.slug, p.description, p.leather_type,
+          p.material_title, p.material_body, p.care_title, p.care_body,
+          p.shipping_title, p.shipping_body, p.base_price_usd,
           p.is_featured, c.slug AS category,
           COALESCE(
             (SELECT json_agg(pi.image_url ORDER BY pi.display_order)
@@ -56,7 +58,9 @@ export class PostgresAdapter implements IProductRepository {
     try {
       client = await pool.connect();
       const result = await client.query(`
-        SELECT p.id, p.title, p.slug, p.description, p.leather_type, p.base_price_usd,
+        SELECT p.id, p.title, p.slug, p.description, p.leather_type,
+          p.material_title, p.material_body, p.care_title, p.care_body,
+          p.shipping_title, p.shipping_body, p.base_price_usd,
           p.is_featured, c.slug AS category,
           COALESCE(
             (SELECT json_agg(pi.image_url ORDER BY pi.display_order)
@@ -116,6 +120,14 @@ function mapProductRow(row: Record<string, unknown>): Product {
     leatherType: String(row.leather_type || 'Full-Grain Leather'),
     basePrice: Number(row.base_price_usd || 0),
     description: String(row.description || ''),
+    specifications: {
+      materialTitle: row.material_title ? String(row.material_title) : undefined,
+      materialBody: row.material_body ? String(row.material_body) : undefined,
+      careTitle: row.care_title ? String(row.care_title) : undefined,
+      careBody: row.care_body ? String(row.care_body) : undefined,
+      shippingTitle: row.shipping_title ? String(row.shipping_title) : undefined,
+      shippingBody: row.shipping_body ? String(row.shipping_body) : undefined,
+    },
     images: Array.isArray(row.images) ? row.images as string[] : [],
     variants: Array.isArray(row.variants) ? row.variants as Product['variants'] : [],
     isFeatured: Boolean(row.is_featured),

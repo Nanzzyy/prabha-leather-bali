@@ -8,6 +8,15 @@ export interface ProductVariant {
   stockStatus: 'available' | 'preorder' | 'out_of_stock';
 }
 
+export interface ProductSpecifications {
+  materialTitle?: string | null;
+  materialBody?: string | null;
+  careTitle?: string | null;
+  careBody?: string | null;
+  shippingTitle?: string | null;
+  shippingBody?: string | null;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -16,6 +25,7 @@ export interface Product {
   leatherType: string;
   basePrice: number;
   description: string;
+  specifications?: ProductSpecifications;
   images: string[];
   variants: ProductVariant[];
   isFeatured: boolean;

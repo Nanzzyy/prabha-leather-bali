@@ -6,7 +6,7 @@ import { fetchSupabaseRows } from '@/lib/supabase-rest';
 // mapping in src/lib/repositories/index.ts so the storefront shape stays identical.
 // Returns null on any failure so callers fall back to the build-time prop.
 
-const SELECT = 'id, title, slug, description, leather_type, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
+const SELECT = 'id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)';
 const LOOK_PRODUCT_SELECT = 'id, title, slug, base_price_usd, categories!products_category_id_fkey(slug), product_images(image_url, display_order)';
 
 const KNOWN: Product['category'][] = ['boots', 'bags', 'wallets', 'accessories', 'jackets'];
@@ -24,6 +24,12 @@ type LiveProductRow = {
   slug: string;
   description?: string | null;
   leather_type?: string | null;
+  material_title?: string | null;
+  material_body?: string | null;
+  care_title?: string | null;
+  care_body?: string | null;
+  shipping_title?: string | null;
+  shipping_body?: string | null;
   base_price_usd?: number | string | null;
   is_featured?: boolean | null;
   categories?: LiveCategoryRow | LiveCategoryRow[] | null;
@@ -86,6 +92,14 @@ export function mapLiveProductRow(row: LiveProductRow): Product {
     leatherType: row.leather_type || 'Full-Grain Leather',
     basePrice: Number(row.base_price_usd ?? 0),
     description: row.description || '',
+    specifications: {
+      materialTitle: row.material_title || undefined,
+      materialBody: row.material_body || undefined,
+      careTitle: row.care_title || undefined,
+      careBody: row.care_body || undefined,
+      shippingTitle: row.shipping_title || undefined,
+      shippingBody: row.shipping_body || undefined,
+    },
     images: (row.product_images || []).slice().sort((a, b) => Number(a.display_order ?? 0) - Number(b.display_order ?? 0)).map((i) => i.image_url).filter((image): image is string => Boolean(image)),
     variants: (row.product_variants || []).map((v) => ({
       sku: v.sku || '',

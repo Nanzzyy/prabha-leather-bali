@@ -40,6 +40,12 @@ export interface AdminProduct {
   slug: string;
   description: string;
   leather_type: string;
+  material_title: string | null;
+  material_body: string | null;
+  care_title: string | null;
+  care_body: string | null;
+  shipping_title: string | null;
+  shipping_body: string | null;
   base_price_usd: number;
   is_featured: boolean;
   created_at: string;
@@ -55,6 +61,12 @@ export interface ProductInput {
   slug: string;
   description: string;
   leather_type: string;
+  material_title: string | null;
+  material_body: string | null;
+  care_title: string | null;
+  care_body: string | null;
+  shipping_title: string | null;
+  shipping_body: string | null;
   base_price_usd: number;
   is_featured: boolean;
   category_id: string | null;
@@ -68,6 +80,12 @@ type AdminProductRow = {
   slug: string;
   description?: string | null;
   leather_type?: string | null;
+  material_title?: string | null;
+  material_body?: string | null;
+  care_title?: string | null;
+  care_body?: string | null;
+  shipping_title?: string | null;
+  shipping_body?: string | null;
   base_price_usd?: number | string | null;
   is_featured?: boolean | null;
   created_at: string;
@@ -89,6 +107,12 @@ function mapProduct(row: AdminProductRow): AdminProduct {
     slug: row.slug,
     description: row.description ?? '',
     leather_type: row.leather_type ?? 'Full-Grain Cowhide',
+    material_title: row.material_title ?? null,
+    material_body: row.material_body ?? null,
+    care_title: row.care_title ?? null,
+    care_body: row.care_body ?? null,
+    shipping_title: row.shipping_title ?? null,
+    shipping_body: row.shipping_body ?? null,
     base_price_usd: Number(row.base_price_usd ?? 0),
     is_featured: Boolean(row.is_featured),
     created_at: row.created_at,
@@ -105,7 +129,7 @@ function mapProduct(row: AdminProductRow): AdminProduct {
 }
 
 const PRODUCT_SELECT = `
-  id, title, slug, description, leather_type, base_price_usd, is_featured, created_at,
+  id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, created_at,
   categories!products_category_id_fkey ( id, name, slug ),
   product_images ( id, image_url, is_primary, display_order ),
   product_variants ( id, sku, color_name, color_hex, size_eu, image_url, stock_status )
@@ -148,6 +172,12 @@ export async function saveProduct(input: ProductInput): Promise<string> {
     slug: input.slug.trim(),
     description: input.description.trim(),
     leather_type: input.leather_type.trim() || 'Full-Grain Cowhide',
+    material_title: input.material_title?.trim() || null,
+    material_body: input.material_body?.trim() || null,
+    care_title: input.care_title?.trim() || null,
+    care_body: input.care_body?.trim() || null,
+    shipping_title: input.shipping_title?.trim() || null,
+    shipping_body: input.shipping_body?.trim() || null,
     base_price_usd: Number(input.base_price_usd) || 0,
     is_featured: input.is_featured,
     category_id: input.category_id,

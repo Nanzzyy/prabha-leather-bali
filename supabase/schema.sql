@@ -17,10 +17,24 @@ create table if not exists public.products (
   slug varchar(255) unique not null,
   description text,
   leather_type varchar(100) not null default 'Full-Grain Cowhide',
+  material_title text,
+  material_body text,
+  care_title text,
+  care_body text,
+  shipping_title text,
+  shipping_body text,
   base_price_usd numeric(10, 2) not null check (base_price_usd >= 0),
   is_featured boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- Additive compatibility for projects created from an earlier schema version.
+alter table public.products add column if not exists material_title text;
+alter table public.products add column if not exists material_body text;
+alter table public.products add column if not exists care_title text;
+alter table public.products add column if not exists care_body text;
+alter table public.products add column if not exists shipping_title text;
+alter table public.products add column if not exists shipping_body text;
 
 create table if not exists public.product_images (
   id uuid primary key default gen_random_uuid(),

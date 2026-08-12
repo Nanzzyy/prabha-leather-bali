@@ -8,13 +8,29 @@ import Select from '@/components/Select';
 import AdminPageHead from '@/components/admin/AdminPageHead';
 import { useToast, Toast } from '@/components/admin/Toast';
 import {
-  AdminCategory, AdminImage, AdminVariant, STOCK_STATUSES,
+  AdminCategory, AdminImage, AdminProduct, AdminVariant, STOCK_STATUSES,
   listCategories, getProductById, saveProduct, uploadImage, deleteImageByUrl,
 } from '@/lib/admin/queries';
 
 const slugify = (s: string) => s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const emptyVariant = (): AdminVariant => ({ sku: '', color_name: '', color_hex: '#8B4513', size_eu: '', image_url: '', stock_status: 'available' });
-const serializeProductForm = (input: { title: string; slug: string; description: string; leatherType: string; price: string; categoryId: string; featured: boolean; variants: AdminVariant[]; images: AdminImage[] }) => JSON.stringify({ ...input, variants: input.variants, images: input.images });
+type SpecificationKey = 'material' | 'care' | 'shipping';
+type SpecificationDraft = { useDefault: boolean; title: string; body: string };
+type SpecificationDrafts = Record<SpecificationKey, SpecificationDraft>;
+
+const emptySpecificationDrafts = (): SpecificationDrafts => ({
+  material: { useDefault: true, title: '', body: '' },
+  care: { useDefault: true, title: '', body: '' },
+  shipping: { useDefault: true, title: '', body: '' },
+});
+
+const specificationDraftsFromProduct = (product: AdminProduct): SpecificationDrafts => ({
+  material: { useDefault: !(product.material_title?.trim() || product.material_body?.trim()), title: product.material_title ?? '', body: product.material_body ?? '' },
+  care: { useDefault: !(product.care_title?.trim() || product.care_body?.trim()), title: product.care_title ?? '', body: product.care_body ?? '' },
+  shipping: { useDefault: !(product.shipping_title?.trim() || product.shipping_body?.trim()), title: product.shipping_title ?? '', body: product.shipping_body ?? '' },
+});
+
+const serializeProductForm = (input: { title: string; slug: string; description: string; leatherType: string; price: string; categoryId: string; featured: boolean; specifications: SpecificationDrafts; variants: AdminVariant[]; images: AdminImage[] }) => JSON.stringify(input);
 
 export default function ProductForm({ productId }: { productId?: string }) {
   const router = useRouter();
@@ -31,12 +47,13 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [price, setPrice] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [featured, setFeatured] = useState(false);
+  const [specifications, setSpecifications] = useState<SpecificationDrafts>(() => emptySpecificationDrafts());
   const [variants, setVariants] = useState<AdminVariant[]>([emptyVariant()]);
   const [images, setImages] = useState<AdminImage[]>([]);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [initialSnapshot, setInitialSnapshot] = useState<string | null>(() => productId ? null : serializeProductForm({ title: '', slug: '', description: '', leatherType: 'Full-Grain Cowhide', price: '', categoryId: '', featured: false, variants: [emptyVariant()], images: [] }));
+  const [initialSnapshot, setInitialSnapshot] = useState<string | null>(() => productId ? null : serializeProductForm({ title: '', slug: '', description: '', leatherType: 'Full-Grain Cowhide', price: '', categoryId: '', featured: false, specifications: emptySpecificationDrafts(), variants: [emptyVariant()], images: [] }));
   const allowNavigationRef = useRef(false);
 
   useEffect(() => {
@@ -49,15 +66,16 @@ export default function ProductForm({ productId }: { productId?: string }) {
         setDescription(p.description); setLeatherType(p.leather_type);
         setPrice(String(p.base_price_usd)); setCategoryId(p.category_id ?? '');
         setFeatured(p.is_featured);
+        setSpecifications(specificationDraftsFromProduct(p));
         setVariants(p.variants.length ? p.variants : [emptyVariant()]);
         setImages(p.images);
-        setInitialSnapshot(serializeProductForm({ title: p.title, slug: p.slug, description: p.description, leatherType: p.leather_type, price: String(p.base_price_usd), categoryId: p.category_id ?? '', featured: p.is_featured, variants: p.variants.length ? p.variants : [emptyVariant()], images: p.images }));
+        setInitialSnapshot(serializeProductForm({ title: p.title, slug: p.slug, description: p.description, leatherType: p.leather_type, price: String(p.base_price_usd), categoryId: p.category_id ?? '', featured: p.is_featured, specifications: specificationDraftsFromProduct(p), variants: p.variants.length ? p.variants : [emptyVariant()], images: p.images }));
       })
       .catch((e) => err(e instanceof Error ? e.message : 'Load failed.'))
       .finally(() => setLoading(false));
   }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const currentSnapshot = useMemo(() => serializeProductForm({ title, slug, description, leatherType, price, categoryId, featured, variants, images }), [title, slug, description, leatherType, price, categoryId, featured, variants, images]);
+  const currentSnapshot = useMemo(() => serializeProductForm({ title, slug, description, leatherType, price, categoryId, featured, specifications, variants, images }), [title, slug, description, leatherType, price, categoryId, featured, specifications, variants, images]);
   const isDirty = !loading && initialSnapshot !== null && initialSnapshot !== currentSnapshot;
 
   useEffect(() => {
@@ -87,6 +105,10 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
   const setVariant = (idx: number, patch: Partial<AdminVariant>) =>
     setVariants((vs) => vs.map((v, i) => (i === idx ? { ...v, ...patch } : v)));
+  const setSpecification = (key: SpecificationKey, patch: Partial<SpecificationDraft>) =>
+    setSpecifications((current) => ({ ...current, [key]: { ...current[key], ...patch } }));
+  const toggleSpecificationDefault = (key: SpecificationKey, useDefault: boolean) =>
+    setSpecification(key, useDefault ? { useDefault, title: '', body: '' } : { useDefault });
   const addVariant = () => setVariants((vs) => [...vs, emptyVariant()]);
   const removeVariant = (idx: number) => setVariants((vs) => vs.filter((_, i) => i !== idx));
 
@@ -138,6 +160,12 @@ export default function ProductForm({ productId }: { productId?: string }) {
         id: productId,
         title, slug, description, leather_type: leatherType,
         base_price_usd: Number(price) || 0, is_featured: featured,
+        material_title: specifications.material.useDefault ? null : specifications.material.title,
+        material_body: specifications.material.useDefault ? null : specifications.material.body,
+        care_title: specifications.care.useDefault ? null : specifications.care.title,
+        care_body: specifications.care.useDefault ? null : specifications.care.body,
+        shipping_title: specifications.shipping.useDefault ? null : specifications.shipping.title,
+        shipping_body: specifications.shipping.useDefault ? null : specifications.shipping.body,
         category_id: categoryId, variants: cleanVariants, images,
       });
       ok(productId ? 'Product updated.' : 'Product created.');
@@ -166,6 +194,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
       <nav className="admin-form-anchors" aria-label="Product form sections">
         <a href="#details">Details</a>
+        <a href="#specifications">Product panels</a>
         <a href="#variants">Variants</a>
         <a href="#images">Images</a>
       </nav>
@@ -207,6 +236,14 @@ export default function ProductForm({ productId }: { productId?: string }) {
               <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} /> Feature on homepage
             </label>
           </div>
+        </div>
+
+        <div id="specifications" className="admin-section admin-form-section">
+          <h2>Product detail panels</h2>
+          <p className="admin-field__hint">Use the global defaults from Content manager, or override the title and text for this product only.</p>
+          <SpecificationEditor label="Material specification" value={specifications.material} onChange={(patch) => setSpecification('material', patch)} onToggleDefault={(useDefault) => toggleSpecificationDefault('material', useDefault)} />
+          <SpecificationEditor label="Leather care" value={specifications.care} onChange={(patch) => setSpecification('care', patch)} onToggleDefault={(useDefault) => toggleSpecificationDefault('care', useDefault)} />
+          <SpecificationEditor label="Shipping" value={specifications.shipping} onChange={(patch) => setSpecification('shipping', patch)} onToggleDefault={(useDefault) => toggleSpecificationDefault('shipping', useDefault)} />
         </div>
 
         <div id="variants" className="admin-section admin-form-section">
@@ -300,6 +337,40 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
       <Toast toast={toast} onDone={clear} />
     </>
+  );
+}
+
+function SpecificationEditor({ label, value, onChange, onToggleDefault }: {
+  label: string;
+  value: SpecificationDraft;
+  onChange: (patch: Partial<SpecificationDraft>) => void;
+  onToggleDefault: (useDefault: boolean) => void;
+}) {
+  return (
+    <div className="admin-product-specification">
+      <div className="admin-fieldrow">
+        <div>
+          <h3>{label}</h3>
+          <span className="admin-field__hint">Uses Catalog → Product detail defaults when enabled.</span>
+        </div>
+        <label className="admin-checkbox">
+          <input type="checkbox" checked={value.useDefault} onChange={(event) => onToggleDefault(event.target.checked)} />
+          Use global default
+        </label>
+      </div>
+      {!value.useDefault && (
+        <div className="admin-fieldrow">
+          <label className="admin-field">
+            <span className="admin-field__label">Title</span>
+            <input type="text" value={value.title} onChange={(event) => onChange({ title: event.target.value })} />
+          </label>
+          <label className="admin-field">
+            <span className="admin-field__label">Text</span>
+            <textarea value={value.body} onChange={(event) => onChange({ body: event.target.value })} rows={3} />
+          </label>
+        </div>
+      )}
+    </div>
   );
 }
 

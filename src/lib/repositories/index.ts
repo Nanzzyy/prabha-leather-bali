@@ -35,7 +35,7 @@ async function getCatalogProductsUncached() {
     try {
       const { data, error } = await supabase
         .from('products')
-        .select('id, title, slug, description, leather_type, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)')
+        .select('id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, image_url, stock_status)')
         .order('is_featured', { ascending: false });
 
       if (!error && data?.length) {
@@ -48,6 +48,14 @@ async function getCatalogProductsUncached() {
           leatherType: row.leather_type || 'Full-Grain Leather',
           basePrice: Number(row.base_price_usd),
           description: row.description || '',
+          specifications: {
+            materialTitle: row.material_title || undefined,
+            materialBody: row.material_body || undefined,
+            careTitle: row.care_title || undefined,
+            careBody: row.care_body || undefined,
+            shippingTitle: row.shipping_title || undefined,
+            shippingBody: row.shipping_body || undefined,
+          },
           images: (row.product_images || []).sort((a, b) => a.display_order - b.display_order).map((image) => image.image_url),
           variants: (row.product_variants || []).map((item) => ({
             sku: item.sku,
