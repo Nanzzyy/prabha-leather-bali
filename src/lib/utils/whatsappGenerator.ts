@@ -7,7 +7,11 @@ interface CustomerData {
 }
 
 const BRAND_NAME = "Praba Leather Bali";
-const FALLBACK_ADMIN_PHONE = '6281804595666';
+
+export function normalizeWhatsAppNumber(value: string | null | undefined): string | null {
+  const normalized = (value ?? '').replace(/\D/g, '');
+  return normalized || null;
+}
 
 export function formatUSD(amount: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -25,7 +29,7 @@ export function formatRupiah(amount: number): string {
   }).format(amount);
 }
 
-export function generateWhatsAppPayload(cartItems: CartItem[], customer: CustomerData, adminPhone: string): string {
+export function generateWhatsAppPayload(cartItems: CartItem[], customer: CustomerData, adminPhone: string): string | null {
   const name = customer.name.trim();
   const destination = customer.destination.trim();
   const notes = customer.notes?.trim();
@@ -56,7 +60,8 @@ export function generateWhatsAppPayload(cartItems: CartItem[], customer: Custome
 
   message += `Could you please confirm availability, personalization, and shipping options?\n\nThank you!\n${name || 'A Praba Leather customer'} — ${BRAND_NAME}`;
 
-  const phone = adminPhone.replace(/\D/g, '') || FALLBACK_ADMIN_PHONE;
+  const phone = normalizeWhatsAppNumber(adminPhone);
+  if (!phone) return null;
   const encodedMessage = encodeURIComponent(message);
   return `https://wa.me/${phone}?text=${encodedMessage}`;
 }

@@ -25,7 +25,6 @@
 
 ## Remaining Errors / To Do
 - Seed `product_images` / `product_variants` for the 6 non-sample products (they render with empty galleries; browser logs `src=""` warnings on detail pages). `praba-sample-piece` is the only fully-seeded product.
-- Replace the placeholder WhatsApp admin number in `src/lib/utils/whatsappGenerator.ts`.
 - Replace reference image URLs with owned Supabase Storage assets.
 
 ---

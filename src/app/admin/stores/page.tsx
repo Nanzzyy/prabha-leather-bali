@@ -88,10 +88,10 @@ function StoreCard({ initial, isNew, busy, onSave, onDelete }: {
         <label className="admin-field"><span className="admin-field__label">Hours</span><input type="text" value={d.hours} onChange={(e) => set({ hours: e.target.value })} placeholder="Mon–Sat · 09:00–19:00" /></label>
         </div>
         <div className="admin-fieldrow">
-        <label className="admin-field"><span className="admin-field__label">Phone (display)</span><input type="text" value={d.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="+62 818 …" /></label>
-        <label className="admin-field"><span className="admin-field__label">Phone link (tel:)</span><input type="text" value={d.phone_href} onChange={(e) => set({ phone_href: e.target.value })} placeholder="+62818…" /></label>
+        <label className="admin-field"><span className="admin-field__label">Phone (display)</span><input type="text" value={d.phone} onChange={(e) => set({ phone: e.target.value })} placeholder="Enter the display number" /></label>
+        <label className="admin-field"><span className="admin-field__label">Phone link (tel:)</span><input type="text" value={d.phone_href} onChange={(e) => set({ phone_href: e.target.value })} placeholder="Enter the dialable number" /></label>
         </div>
-        <label className="admin-field"><span className="admin-field__label">Email</span><input type="text" inputMode="email" value={d.email} onChange={(e) => set({ email: e.target.value })} placeholder="hello@prabaleather.com" /></label>
+        <label className="admin-field"><span className="admin-field__label">Email</span><input type="text" inputMode="email" value={d.email} onChange={(e) => set({ email: e.target.value })} placeholder="email@example.com" /></label>
         <label className="admin-field"><span className="admin-field__label">Address</span><input type="text" value={d.address} onChange={(e) => set({ address: e.target.value })} /></label>
         <label className="admin-field"><span className="admin-field__label">Map query or Google Maps link</span><input type="url" value={d.map_query} onChange={(e) => set({ map_query: e.target.value })} placeholder="https://maps.app.goo.gl/... or address" /></label>
         <div className="admin-sticky-actions">

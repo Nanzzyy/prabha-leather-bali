@@ -127,10 +127,5 @@ create policy "Admins manage stores" on public.stores for all to authenticated u
 drop policy if exists "Admins manage site content" on public.site_content;
 create policy "Admins manage site content" on public.site_content for all to authenticated using (public.is_admin()) with check (public.is_admin());
 
--- 5. Seed the three existing ateliers so the Contact CMS opens with content.
-insert into public.stores (name, address, phone, phone_href, email, hours, map_query, display_order, is_active)
-values
-  ('Praba Atelier · Canggu', 'Jl. Nelayan, Canggu, Kec. Kuta Utara, Kabupaten Badung, Bali', '+62 818 0459 5666', '+6281804595666', 'hello@prabaleather.com', 'Mon–Sat · 09:00–19:00', 'Jl. Nelayan, Canggu, Bali', 0, true),
-  ('Praba Boutique · Ubud', 'Jl. Monkey Forest, Ubud, Kecamatan Ubud, Kabupaten Gianyar, Bali 80571', '+62 818 0459 5666', '+6281804595666', 'hello@prabaleather.com', 'Mon–Sun · 10:00–20:00', 'Jl. Monkey Forest, Ubud, Bali', 1, true),
-  ('Praba Studio · Seminyak', 'Jl. Raya Seminyak, Kec. Kuta, Kabupaten Badung, Bali', '+62 818 0459 5666', '+6281804595666', 'hello@prabaleather.com', 'Mon–Sat · 10:00–19:00', 'Jl. Raya Seminyak, Bali', 2, true)
-on conflict do nothing;
+-- 5. Store rows are intentionally not seeded. Every address, phone number,
+-- email, and map destination must be entered and maintained in the Admin Panel.

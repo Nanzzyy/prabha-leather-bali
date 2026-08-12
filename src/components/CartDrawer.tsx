@@ -5,7 +5,7 @@ import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useCurrency } from '@/lib/currency/CurrencyContext';
-import { generateWhatsAppPayload } from '@/lib/utils/whatsappGenerator';
+import { generateWhatsAppPayload, normalizeWhatsAppNumber } from '@/lib/utils/whatsappGenerator';
 import Icon from './Icon';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
 
@@ -36,8 +36,11 @@ export default function CartDrawer() {
 
   const checkout = () => {
     if (!name.trim() || !destination.trim() || items.length === 0) return;
-    window.open(generateWhatsAppPayload(items, { name, destination, notes }, content.contact.whatsappNumber), '_blank', 'noopener,noreferrer');
+    const url = generateWhatsAppPayload(items, { name, destination, notes }, content.contact.whatsappNumber);
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
+
+  const checkoutPhoneConfigured = Boolean(normalizeWhatsAppNumber(content.contact.whatsappNumber));
 
   return (
     <div className="drawer-layer" role="dialog" aria-modal="true" aria-label={labels.title}>
@@ -55,7 +58,7 @@ export default function CartDrawer() {
             <div className="cart-form"><div className="cart-form__heading"><span className="eyebrow">{labels.almostYours}</span><h3>{labels.orderDetails}</h3></div><label><span className="cart-form__label-line">{labels.fullName} <span className="cart-form__required">*</span></span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="Alexander Pierce" required /></label><label><span className="cart-form__label-line">{labels.delivery} <span className="cart-form__required">*</span></span><input value={destination} onChange={(event) => setDestination(event.target.value)} placeholder="Sydney, Australia" required /></label><label><span className="cart-form__label-line">{labels.notes} <span>(optional)</span></span><textarea value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Any specific requests?" rows={2} /></label></div>
           </>}
         </div>
-        {items.length > 0 && <div className="cart-drawer__footer"><div className="cart-total"><span>{labels.subtotal}</span><strong>{formatPrice(subtotal)}</strong></div><div className="cart-shipping"><span>{labels.estimatedShipping}</span><span>{labels.calculatedViaWhatsapp}</span></div><button className="button button--whatsapp" type="button" onClick={checkout} disabled={!name.trim() || !destination.trim()}><Icon>chat</Icon> {labels.continueOrder} <Icon>arrow_forward</Icon></button><button className="cart-clear" type="button" onClick={clearCart}>{labels.clearPouch}</button><p>{labels.confirmation}</p></div>}
+        {items.length > 0 && <div className="cart-drawer__footer"><div className="cart-total"><span>{labels.subtotal}</span><strong>{formatPrice(subtotal)}</strong></div><div className="cart-shipping"><span>{labels.estimatedShipping}</span><span>{labels.calculatedViaWhatsapp}</span></div><button className="button button--whatsapp" type="button" onClick={checkout} disabled={!name.trim() || !destination.trim() || !checkoutPhoneConfigured}><Icon>chat</Icon> {labels.continueOrder} <Icon>arrow_forward</Icon></button><button className="cart-clear" type="button" onClick={clearCart}>{labels.clearPouch}</button><p>{labels.confirmation}</p></div>}
       </aside>
     </div>
   );

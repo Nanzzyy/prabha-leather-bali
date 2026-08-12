@@ -104,7 +104,7 @@ const en: SiteContent = {
         collectionDetail: { title: 'Leather Collection — Praba Leather Bali', description: 'Explore considered leather pieces made slowly in Bali for everyday rituals.' },
       },
     },
-    footer: { brand: 'PRABA LEATHER BALI', tagline: 'A small house of Balinese artisans crafting full-grain leather goods made to carry your story — slowly, honestly, by hand.', explore: 'Explore', service: 'Service', visit: 'Visit', ourStory: 'Our Story', contact: 'Contact', shipping: 'Shipping & Returns', careGuide: 'Care Guide', locations: 'Canggu · Ubud · Seminyak', mapQuery: 'Canggu Bali', handcrafted: 'Handcrafted in Bali, Indonesia · A workshop of Balinese artisans.', rights: 'All rights reserved.', privacy: 'Privacy Policy', privacyHref: '/privacy/', terms: 'Terms of Service', termsHref: '/terms/', cookies: 'Cookies', cookiesHref: '/cookies/', phone: '+62 818 0459 5666', phoneHref: '+6281804595666', email: 'hello@prabaleather.com', whatsapp: '6281804595666', instagram: 'https://instagram.com' },
+    footer: { brand: 'PRABA LEATHER BALI', tagline: 'A small house of Balinese artisans crafting full-grain leather goods made to carry your story — slowly, honestly, by hand.', explore: 'Explore', service: 'Service', visit: 'Visit', ourStory: 'Our Story', contact: 'Contact', shipping: 'Shipping & Returns', careGuide: 'Care Guide', locations: '', mapQuery: '', handcrafted: 'Handcrafted in Bali, Indonesia · A workshop of Balinese artisans.', rights: 'All rights reserved.', privacy: 'Privacy Policy', privacyHref: '/privacy/', terms: 'Terms of Service', termsHref: '/terms/', cookies: 'Cookies', cookiesHref: '/cookies/', phone: '', phoneHref: '', email: '', whatsapp: '', instagram: '' },
     cart: { title: 'Your Order Pouch', item: 'item', items: 'items', close: 'Close order pouch', emptyTitle: 'Your pouch is empty', emptyBody: 'Explore the collection and save a piece for your next story.', exploreCatalog: 'Explore catalog', almostYours: 'Almost yours', orderDetails: 'Order Details', fullName: 'Your full name', delivery: 'Delivery address / country', notes: 'Special notes for artisan', subtotal: 'Subtotal', estimatedShipping: 'Estimated shipping', calculatedViaWhatsapp: 'Calculated via WhatsApp', continueOrder: 'Continue Order to WhatsApp', clearPouch: 'Clear pouch', confirmation: 'We’ll confirm availability and shipping costs with you directly.' },
   },
   home: {
@@ -138,7 +138,7 @@ const en: SiteContent = {
   contact: {
     hero: { eyebrow: 'Visit us', h1a: 'Find Us', h1b: 'in Bali', body: 'Three ateliers across the island, one quiet craft. Select a store to load it on the map, or drop by to feel the leather, commission a bespoke piece, or simply say hello.' },
     labels: { address: 'Address', phone: 'Phone', email: 'Email', hours: 'Hours', showOnMap: 'Show on map', showingOnMap: 'Showing on map', selectedAtelier: 'Selected atelier', whatsapp: 'Message us on WhatsApp' },
-    whatsappNumber: '6281804595666', whatsappMessage: 'Hello Praba Leather, I would like to enquire about a piece.',
+    whatsappNumber: '', whatsappMessage: '',
   },
   about: {
     hero: { eyebrow: 'Our story', title: 'About Us' },

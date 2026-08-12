@@ -1,6 +1,20 @@
+'use client';
+
 import type { LegalPolicy } from '@/lib/legal/policies';
+import { useSiteContent } from '@/lib/content/SiteContentContext';
+
+function withContactData(value: string, email: string, phone: string) {
+  return value
+    .replaceAll('{{contactEmail}}', email || 'the contact email listed in the footer')
+    .replaceAll('{{contactPhone}}', phone || 'the phone number listed in the footer');
+}
 
 export default function LegalPage({ policy }: { policy: LegalPolicy }) {
+  const { content } = useSiteContent();
+  const email = content.global.footer.email.trim();
+  const phone = content.global.footer.phone.trim();
+  const phoneHref = content.global.footer.phoneHref.trim() || phone;
+
   return (
     <main className="legal-page">
       <header className="legal-page__hero">
@@ -16,16 +30,17 @@ export default function LegalPage({ policy }: { policy: LegalPolicy }) {
         {policy.sections.map((section) => (
           <section className="legal-page__section" key={section.heading}>
             <h2>{section.heading}</h2>
-            {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-            {section.bullets && <ul>{section.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}</ul>}
+            {section.paragraphs?.map((paragraph) => <p key={paragraph}>{withContactData(paragraph, email, phone)}</p>)}
+            {section.bullets && <ul>{section.bullets.map((bullet) => <li key={bullet}>{withContactData(bullet, email, phone)}</li>)}</ul>}
           </section>
         ))}
 
         <section className="legal-page__contact">
           <span className="eyebrow">Praba Leather Bali</span>
           <h2>{policy.contactHeading}</h2>
-          <p>{policy.contactBody}</p>
-          <a href="mailto:hello@prabaleather.com">hello@prabaleather.com</a>
+          <p>{withContactData(policy.contactBody, email, phone)}</p>
+          {email && <a href={`mailto:${email}`}>{email}</a>}
+          {phone && <a href={`tel:${phoneHref}`}>{phone}</a>}
         </section>
       </article>
     </main>
