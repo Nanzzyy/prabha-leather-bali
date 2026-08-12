@@ -1,4 +1,4 @@
-import { heroImages, catalogProducts } from '@/lib/data/catalog';
+import { fallbackHeroImage, catalogProducts } from '@/lib/data/catalog';
 import type { Lang } from '@/lib/i18n/dictionaries';
 
 export type ContentImage = { image_url: string; alt: string };
@@ -70,7 +70,7 @@ export type SiteContent = {
   };
 };
 
-const productImage = (id: string) => catalogProducts.find((product) => product.id === id)?.images[0] ?? heroImages[0];
+const productImage = (id: string) => catalogProducts.find((product) => product.id === id)?.images[0] ?? fallbackHeroImage;
 
 const en: SiteContent = {
   global: {
@@ -82,7 +82,7 @@ const en: SiteContent = {
       siteTitle: 'Praba Leather Bali — Handcrafted Leather Goods from Bali',
       siteDescription: 'Discover handcrafted full-grain leather bags, boots, jackets, wallets, and accessories made by Balinese artisans in Bali, Indonesia.',
       keywords: 'Praba Leather Bali, handcrafted leather Bali, full-grain leather, leather bags Bali, leather boots Bali, leather goods Indonesia',
-      canonicalUrl: 'https://prabaleather.com',
+      canonicalUrl: 'https://prabaleatherbali.com',
       robots: 'index,follow',
       ogTitle: 'Praba Leather Bali — Handcrafted Leather Goods from Bali',
       ogDescription: 'Full-grain leather goods made slowly in Bali, Indonesia. Explore bags, boots, jackets, wallets, and accessories built to carry your story.',
@@ -119,7 +119,7 @@ const en: SiteContent = {
     ],
   },
   collection: {
-    hero: { eyebrow: 'Praba Leather Bali', h1a: 'The', h1b: 'Collection', body: 'Considered leather pieces for everyday rituals, made slowly in Bali and designed to live with you.', collectionLink: 'Collection', scroll: 'Scroll to explore', image: { image_url: heroImages[2], alt: 'Praba Leather Bali collection' } },
+    hero: { eyebrow: 'Praba Leather Bali', h1a: 'The', h1b: 'Collection', body: 'Considered leather pieces for everyday rituals, made slowly in Bali and designed to live with you.', collectionLink: 'Collection', scroll: 'Scroll to explore', image: { image_url: productImage('ubud-weave-tote'), alt: 'Praba Leather Bali collection' } },
     explore: { eyebrow: 'Explore by kind', title: 'Our collection', body: 'Discover the right shape for your day, from considered carry goods to leather layers built for the road.' },
     items: [
       { slug: 'bags', title: 'Bags', copy: 'Carry pieces with quiet structure.', image_url: productImage('ubud-weave-tote'), subcategories: [{ slug: 'totes', title: 'Totes' }, { slug: 'briefcases', title: 'Briefcases' }, { slug: 'everyday-bags', title: 'Everyday Bags' }, { slug: 'travel-bags', title: 'Travel Bags' }] },

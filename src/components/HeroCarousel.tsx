@@ -2,17 +2,17 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { heroImages } from '@/lib/data/catalog';
 import type { LiveHero } from '@/lib/catalog/live';
+import { fallbackHeroImage } from '@/lib/data/catalog';
 import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 import Icon from './Icon';
 
-export default function HeroCarousel() {
+export default function HeroCarousel({ initialSlides }: { initialSlides?: LiveHero[] | null }) {
   const [active, setActive] = useState(0);
-  const [slides, setSlides] = useState<LiveHero[]>(heroImages.map((image) => ({ image_url: image, alt_text: 'Editorial view of handcrafted leather', caption: '' })));
+  const [slides, setSlides] = useState<LiveHero[]>(initialSlides?.length ? initialSlides : [{ image_url: fallbackHeroImage, alt_text: 'Editorial view of handcrafted leather', caption: '' }]);
 
-  // Refresh managed hero images after the first paint; the bundled hero keeps
-  // the critical path independent from the CMS and its client bundle.
+  // Revalidate managed hero images after hydration in case the CMS changed
+  // between the server render and the browser becoming interactive.
   useEffect(() => {
     let cancelled = false;
     const load = () => import('@/lib/catalog/live')

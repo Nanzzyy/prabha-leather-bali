@@ -41,27 +41,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`light ${serifFont.variable} ${serifItalicFont.variable} ${sansFont.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(() => {
-              // Host caches can briefly serve HTML from one build with assets
-              // from another. A single cache-busting retry prevents a blank
-              // loader when a hashed Next.js chunk or stylesheet is missing.
-              const recoveryKey = 'praba:asset-recovery';
-              const recover = (event) => {
-                const target = event.target;
-                const asset = target && (target.src || target.href || '');
-                if (!asset.includes('/_next/') || sessionStorage.getItem(recoveryKey)) return;
-                sessionStorage.setItem(recoveryKey, '1');
-                const url = new URL(window.location.href);
-                url.searchParams.set('_asset_recovery', Date.now().toString());
-                window.location.replace(url.toString());
-              };
-              window.addEventListener('error', recover, true);
-              window.addEventListener('load', () => window.setTimeout(() => sessionStorage.removeItem(recoveryKey), 10000), { once: true });
-            })();`,
-          }}
-        />
       </head>
       <body>{children}</body>
     </html>

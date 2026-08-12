@@ -119,5 +119,4 @@ export const catalogProducts: Product[] = [
   },
 ];
 
-export const heroImages = [images.hero, images.boot, images.bag, images.jacket, images.bootDetail];
-
+export const fallbackHeroImage = images.hero;

@@ -115,7 +115,7 @@ export default function CatalogClient({ products: initialProducts }: Props) {
     return groupCategories.map((slug) => ({ slug, title: categoryLabels[slug] || slug, products: filteredProducts.filter((product) => product.category === slug) })).filter((group) => group.products.length > 0);
   }, [activeCategory, categoryLabels, filteredProducts]);
 
-  const getVisibleCount = (group: string) => visibleCounts[group] || 2;
+  const getVisibleCount = (group: string) => Math.max(visibleCounts[group] ?? 0, gridColumns * gridColumns);
   const loadMore = (group: string) => setVisibleCounts((counts) => ({ ...counts, [group]: getVisibleCount(group) + 4 }));
 
   const reset = () => { setLeather('all'); setColor('all'); setPrice(500); setSearch(''); setVisibleCounts({}); navigateToCategory('all'); navigateToSubcategory('all'); };

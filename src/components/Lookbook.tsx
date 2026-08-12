@@ -2,40 +2,18 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { catalogProducts, heroImages } from '@/lib/data/catalog';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useCurrency } from '@/lib/currency/CurrencyContext';
 import { useLang } from '@/lib/i18n/LangContext';
 import { flyToPouch } from '@/lib/utils/flyToCart';
 import { fetchLiveLooks, type LiveLook } from '@/lib/catalog/live';
 import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
-import { Product } from '@/lib/types/repository';
+import type { Product } from '@/lib/types/repository';
 import Icon from './Icon';
 import LocaleLink from './LocaleLink';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
 
-type Spot = { product: Product; x: number; y: number; imageIndex: number };
-type Look = { id: string; image: string; images: string[]; title: string; displayOrder: number; spots: Spot[] };
-
-const find = (id: string): Product => catalogProducts.find((p) => p.id === id) ?? catalogProducts[0];
-
-// ponytail: hotspot coordinates are best-guess placeholders — tune to the real photography, and
-// swap heroImages for owned lifestyle shoots when available. Used only as a fallback
-// until looks are created in the CMS (supabase/cms-content.sql).
-const looks: Look[] = [
-  { id: 'look-1', image: heroImages[0], images: [heroImages[0], heroImages[1]], title: 'The daily carry', displayOrder: 0, spots: [
-    { product: find('ubud-weave-tote'), x: 36, y: 52, imageIndex: 0 },
-    { product: find('duke-heritage-boot'), x: 56, y: 86, imageIndex: 0 },
-    { product: find('artisan-cardholder'), x: 70, y: 47, imageIndex: 1 },
-  ] },
-  { id: 'look-2', image: heroImages[3], images: [heroImages[3], heroImages[4]], title: 'The road layer', displayOrder: 1, spots: [
-    { product: find('onyx-moto-jacket'), x: 50, y: 42, imageIndex: 0 },
-    { product: find('classic-dress-belt'), x: 52, y: 70, imageIndex: 0 },
-    { product: find('heritage-briefcase'), x: 28, y: 60, imageIndex: 1 },
-  ] },
-];
-
-export default function Lookbook() {
+export default function Lookbook({ initialLooks }: { initialLooks?: LiveLook[] | null }) {
   const addItem = useCartStore((state) => state.addItem);
   const { formatPrice } = useCurrency();
   const { t } = useLang();
@@ -45,7 +23,18 @@ export default function Lookbook() {
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { fetchLiveLooks().then((l) => { if (l && l.length) setLiveLooks(l); }).catch(() => {}); }, []);
-  const looksData = liveLooks ?? looks;
+  const looksData = liveLooks ?? initialLooks ?? [];
+
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('.look__card')) return;
+      setOpen(null);
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    return () => document.removeEventListener('pointerdown', closeOutside);
+  }, [open]);
 
   const cancelClose = () => { if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; } };
   const openSpot = (key: string) => { cancelClose(); setOpen(key); };
@@ -63,17 +52,19 @@ export default function Lookbook() {
         {looksData.map((look, index) => (
           <article className="look" key={look.id} style={{ gridColumn: (look.displayOrder % 2) + 1 }}>
             <div className={`look__media ${look.images.length > 1 ? 'look__media--pair' : ''}`}>
-              {look.images.map((image, imageIndex) => (
-                <div className="look__panel" key={`${look.id}-${imageIndex}`}>
+              {look.images.map((image, imageIndex) => {
+                const panelSpots = look.spots.filter((spot) => (spot.imageIndex ?? 0) === imageIndex);
+                const panelOpen = panelSpots.some((_, spotIndex) => open === `${look.id}-${imageIndex}-${spotIndex}`);
+                return <div className={`look__panel ${panelOpen ? 'look__panel--active' : ''}`} key={`${look.id}-${imageIndex}`}>
                   <div className="look__panel-image"><Image src={getSupabaseImageUrl(image, { width: 1400, quality: 72 })} alt={`Praba Leather — ${look.title}, image ${imageIndex + 1}`} fill sizes="(max-width: 760px) 100vw, 50vw" className="look__image" /></div>
                   {imageIndex === 0 && <span className="look__label">Look 0{index + 1} — {look.title}</span>}
-                  {look.spots.filter((spot) => (spot.imageIndex ?? 0) === imageIndex).map((spot, i) => {
+                  {panelSpots.map((spot, i) => {
                     const key = `${look.id}-${imageIndex}-${i}`;
                     const side = spot.x > 66 ? 'right' : spot.x < 34 ? 'left' : 'center';
                     const isOpen = open === key;
                     return (
                       <div
-                        className={`look__spot look__spot--${side}`}
+                        className={`look__spot look__spot--${side} ${isOpen ? 'look__spot--open' : ''}`}
                         key={key}
                         style={{ left: `${spot.x}%`, top: `${spot.y}%` }}
                         onMouseEnter={() => openSpot(key)}
@@ -103,8 +94,8 @@ export default function Lookbook() {
                       </div>
                     );
                   })}
-                </div>
-              ))}
+                </div>;
+              })}
             </div>
           </article>
         ))}

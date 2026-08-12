@@ -5,7 +5,7 @@ import { supabaseAnonKey, supabaseUrl } from '@/lib/supabase-config';
 import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 import { fetchWithTimeout } from '@/lib/fetch-with-timeout';
 
-const FALLBACK_SITE_URL = 'https://prabaleather.com';
+const FALLBACK_SITE_URL = 'https://prabaleatherbali.com';
 
 function normalizeSiteUrl(value: string) {
   try {
