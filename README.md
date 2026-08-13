@@ -8,7 +8,7 @@ Next.js App Router, TypeScript, Tailwind CSS, Zustand, Supabase PostgreSQL/Auth,
 
 ## Local setup
 
-Copy `.env.example` to `.env.local`, then provide the public Supabase URL and publishable/anon key. The app includes a local catalog fallback so UI work can run before the database is reachable.
+Copy `.env.example` to `.env.local`, then provide the public Supabase URL and a publishable key (preferred) or legacy anon key. The URL and key must come from the same Supabase project; the build now fails with an actionable error if their project references differ. The app includes a local catalog fallback so UI work can run before the database is reachable.
 
 Run the database scripts in Supabase SQL Editor:
 
@@ -53,4 +53,7 @@ npm run start:standalone
 For Hostinger's GitHub-connected Node.js Web App, use branch `main`, build
 command `npm run build`, output mode `standalone`, and start command
 `npm run start:standalone`. Use `.next` as the output directory if Hostinger
-requires one. Do not upload `out/` for this deployment.
+requires one. Set `NEXT_PUBLIC_SUPABASE_URL` and the matching
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or `NEXT_PUBLIC_SUPABASE_ANON_KEY`) in
+Hostinger's build environment before rebuilding. Do not upload `out/` for this
+deployment.
