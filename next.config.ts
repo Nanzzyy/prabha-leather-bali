@@ -20,17 +20,6 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
   },
-  // Hostinger's CDN previously kept ISR HTML stale for almost a year while
-  // the deployment had already replaced its hashed chunks. Keep document
-  // Keep documents revalidating; hashed assets remain cacheable by Next.
-  async headers() {
-    return [{
-      source: '/((?!_next/static|_next/image|favicon.ico).*)',
-      headers: [
-        { key: 'Cache-Control', value: 'private, no-store, max-age=0, must-revalidate' },
-      ],
-    }];
-  },
 };
 
 export default nextConfig;

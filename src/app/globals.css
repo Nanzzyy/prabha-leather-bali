@@ -1,13 +1,12 @@
 @import "tailwindcss";
 
-/* Loaded by the browser only when an icon is painted; this avoids the
-   render-blocking Google Fonts stylesheet while keeping the existing icon set. */
+/* Self-hosted subset of the Material Symbols used by the storefront and CMS. */
 @font-face {
   font-family: 'Material Symbols Outlined';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('https://fonts.gstatic.com/s/materialsymbolsoutlined/v364/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOem.ttf') format('truetype');
+  src: url('/fonts/material-symbols-outlined.woff2') format('woff2');
 }
 
 :root {
@@ -696,7 +695,7 @@ em { font-style: italic; }
   .look__card-img { aspect-ratio: 4 / 3; }
   .look__card-body { min-height: 136px; padding: 10px 4px 4px; }
 
-  .catalog-filter-backdrop { position: fixed; top: 66px; right: 0; bottom: 0; left: 0; z-index: 39; display: block; border: 0; background: rgba(24,19,17,.28); backdrop-filter: blur(2px); }
+  .catalog-filter-backdrop { position: fixed; top: 66px; right: 0; bottom: 0; left: 0; z-index: 39; display: block; border: 0; background: rgba(24,19,17,.38); backdrop-filter: none; }
   .catalog-sidebar--open { position: fixed; top: 76px; right: 18px; left: 18px; z-index: 40; width: auto; max-height: calc(100dvh - 92px); margin: 0; overflow: hidden; border: 1px solid var(--border); background: var(--bone); box-shadow: 0 18px 48px rgba(24,19,17,.18); }
   .catalog-sidebar--open .catalog-sidebar__panel { max-height: calc(100dvh - 94px); padding: 18px; overflow-y: auto; }
   .catalog-sidebar--open .catalog-sidebar__top { margin-bottom: 20px; }

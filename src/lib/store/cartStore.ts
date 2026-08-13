@@ -4,7 +4,7 @@ import { Product, ProductVariant } from '../types/repository';
 
 export interface CartItem {
   id: string; // unique cart item id (e.g. product.id + variant.sku)
-  product: Product;
+  product: Pick<Product, 'id' | 'name' | 'slug' | 'basePrice'> & { image?: string };
   variant: ProductVariant;
   quantity: number;
   customEmboss?: string;
@@ -42,7 +42,13 @@ export const useCartStore = create<CartState>()(
           });
         } else {
           set({
-            items: [...currentItems, { id: cartItemId, product, variant, quantity, customEmboss: normalizedEmboss || undefined }],
+            items: [...currentItems, {
+              id: cartItemId,
+              product: { id: product.id, name: product.name, slug: product.slug, basePrice: product.basePrice, image: product.images[0] },
+              variant,
+              quantity,
+              customEmboss: normalizedEmboss || undefined,
+            }],
           });
         }
       },
@@ -62,6 +68,24 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'leather-cart-storage', // key in localStorage
+      version: 2,
+      partialize: (state) => ({ items: state.items }),
+      migrate: (persistedState) => {
+        const state = persistedState as { items?: Array<CartItem & { product: CartItem['product'] & { images?: string[] } }> };
+        return {
+          items: (state.items ?? []).map((item) => ({
+            ...item,
+            product: {
+              id: item.product.id,
+              name: item.product.name,
+              slug: item.product.slug,
+              basePrice: item.product.basePrice,
+              image: item.product.image ?? item.product.images?.[0],
+            },
+          })),
+          isOpen: false,
+        };
+      },
     }
   )
 );

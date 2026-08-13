@@ -1,3 +1,6 @@
+-- DEPRECATED: retained only as upgrade history. New installations should run
+-- cms-safe-version-history.sql, which provides multi-snapshot history and
+-- removes this legacy table after importing it.
 -- Praba Leather Bali — CMS safe/global version snapshots.
 -- Additive and idempotent. Run after cms-content.sql and admin.sql.
 

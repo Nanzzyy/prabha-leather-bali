@@ -29,7 +29,7 @@ function readStoredGroups() {
   } catch { return null; }
 }
 
-export async function fetchLiveCollectionProductGroups(): Promise<CollectionProductGroup[] | null> {
+export async function fetchLiveCollectionProductGroups(initialProducts?: Product[]): Promise<CollectionProductGroup[] | null> {
   if (!groupHolder.entry) {
     const stored = readStoredGroups();
     if (stored) groupHolder.entry = stored;
@@ -45,7 +45,7 @@ export async function fetchLiveCollectionProductGroups(): Promise<CollectionProd
         select: 'category_id,subcategory_slug,display_order,product_id,categories!collection_product_groups_category_id_fkey(slug)',
         order: 'display_order.asc',
       }),
-      fetchLiveProducts(),
+      initialProducts ? Promise.resolve(initialProducts) : fetchLiveProducts(),
     ]);
     const productsById = new Map((products ?? []).map((product) => [product.id, product]));
     const groups = new Map<string, CollectionProductGroup>();

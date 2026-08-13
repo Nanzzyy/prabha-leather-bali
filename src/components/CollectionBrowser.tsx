@@ -7,7 +7,6 @@ import LocaleLink from './LocaleLink';
 import ProductCard from './ProductCard';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
 import { fetchLiveCollectionProductGroups, type CollectionProductGroup } from '@/lib/collection/live';
-import { fetchLiveProducts } from '@/lib/catalog/live';
 import { buildSubcategoryAssignments, subcategoriesFor } from '@/lib/catalog/subcategories';
 import type { Product } from '@/lib/types/repository';
 import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
@@ -21,15 +20,14 @@ export default function CollectionBrowser({ slug, initialProducts }: Props) {
   const { content } = useSiteContent();
   const collection = content.collection.items.find((item) => item.slug === slug);
   const heroImage = collection?.image_url || content.collection.hero.image.image_url;
-  const [products, setProducts] = useState(initialProducts);
+  const products = initialProducts;
   const [groups, setGroups] = useState<CollectionProductGroup[] | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    fetchLiveProducts().then((value) => { if (mounted && value) setProducts(value); }).catch(() => {});
-    fetchLiveCollectionProductGroups().then((value) => { if (mounted) setGroups(value); }).catch(() => {});
+    fetchLiveCollectionProductGroups(initialProducts).then((value) => { if (mounted) setGroups(value); }).catch(() => {});
     return () => { mounted = false; };
-  }, []);
+  }, [initialProducts]);
 
   const subcategories = useMemo(() => collection ? subcategoriesFor(collection.subcategories) : [], [collection]);
   const assignments = useMemo(

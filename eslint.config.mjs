@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "cloudflare/r2-upload-worker/worker-configuration.d.ts",
   ]),
 ]);
 

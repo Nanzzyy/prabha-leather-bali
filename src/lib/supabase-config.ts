@@ -1,7 +1,3 @@
-const PROJECT_REF = 'hwjzofbbdpaqmnxycewz';
-const DEFAULT_URL = `https://${PROJECT_REF}.supabase.co`;
-const DEFAULT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3anpvZmJiZHBhcW1ueHljZXd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0MjAzNDEsImV4cCI6MjEwMTk5NjM0MX0.X_gb2RkBLRc5ralVjeEs6Tu6p7Btu-lR6Y_t3DNjvqA';
-
 function clean(value: string | undefined, variableName: string): string {
   return (value ?? '')
     .trim()
@@ -10,31 +6,32 @@ function clean(value: string | undefined, variableName: string): string {
     .trim();
 }
 
-function isProjectUrl(value: string): boolean {
+function requireSupabaseUrl(value: string): string {
+  if (!value) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL. Configure it before starting or building the app.');
+  }
+
   try {
-    return new URL(value).hostname === `${PROJECT_REF}.supabase.co`;
+    const url = new URL(value);
+    const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+    if (url.protocol !== 'https:' && !(isLocal && url.protocol === 'http:')) throw new Error('invalid protocol');
+    return url.toString().replace(/\/$/, '');
   } catch {
-    return false;
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL must be a valid HTTPS URL (HTTP is allowed only for local development).');
   }
 }
 
-function isProjectAnonKey(value: string): boolean {
-  const payload = value.split('.')[1];
-  if (!payload) return false;
-
-  try {
-    const normalized = payload.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(payload.length / 4) * 4, '=');
-    const claims = JSON.parse(atob(normalized)) as { ref?: string; role?: string };
-    return claims.ref === PROJECT_REF && claims.role === 'anon';
-  } catch {
-    return false;
+function requireSupabaseKey(value: string): string {
+  if (!value) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY. Configure it before starting or building the app.');
   }
+  return value;
 }
 
 const configuredUrl = clean(process.env.NEXT_PUBLIC_SUPABASE_URL, 'NEXT_PUBLIC_SUPABASE_URL');
 const configuredKey = clean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, 'NEXT_PUBLIC_SUPABASE_ANON_KEY');
 
-// Vercel values can be pasted with quotes, a KEY= prefix, or from another
-// Supabase project. Keep both browser clients on the same verified project.
-export const supabaseUrl = isProjectUrl(configuredUrl) ? configuredUrl : DEFAULT_URL;
-export const supabaseAnonKey = isProjectAnonKey(configuredKey) ? configuredKey : DEFAULT_ANON_KEY;
+// Values are public by design, but configuration mistakes must fail loudly.
+// Silent fallbacks can connect a production build to the wrong project.
+export const supabaseUrl = requireSupabaseUrl(configuredUrl);
+export const supabaseAnonKey = requireSupabaseKey(configuredKey);

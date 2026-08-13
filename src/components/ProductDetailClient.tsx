@@ -1,12 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Product, ProductVariant } from '@/lib/types/repository';
 import { useCartStore } from '@/lib/store/cartStore';
 import { useCurrency } from '@/lib/currency/CurrencyContext';
 import { flyToPouch } from '@/lib/utils/flyToCart';
-import { fetchLiveProductBySlug } from '@/lib/catalog/live';
 import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 import Accordion from './Accordion';
 import LocaleLink from './LocaleLink';
@@ -16,13 +15,7 @@ import { useSiteContent } from '@/lib/content/SiteContentContext';
 
 interface Props { product: Product; related: Product[]; }
 
-export default function ProductDetailClient({ product: initialProduct, related }: Props) {
-  // Live-read the latest product from Supabase so CMS edits (price, images, copy)
-  // appear without a rebuild. Internal selection state still seeds from the
-  // build-time prop — ponytail: refresh-on-build keeps variant state perfectly fresh.
-  const [live, setLive] = useState<Product | null>(null);
-  useEffect(() => { fetchLiveProductBySlug(initialProduct.slug).then(setLive).catch(() => {}); }, [initialProduct.slug]);
-  const product = live ?? initialProduct;
+export default function ProductDetailClient({ product, related }: Props) {
   const [activeImage, setActiveImage] = useState(0);
   const fallbackVariant: ProductVariant = {
     sku: product.id, color: '—', colorHex: '#8B4513', size: '', priceAdjustment: 0, stockStatus: 'available',

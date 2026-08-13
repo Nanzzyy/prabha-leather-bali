@@ -108,15 +108,12 @@ export class PostgresAdapter implements IProductRepository {
 
 function mapProductRow(row: Record<string, unknown>): Product {
   const category = String(row.category || 'accessories');
-  const safeCategory = ['boots', 'bags', 'wallets', 'accessories', 'jackets'].includes(category)
-    ? category as Product['category']
-    : 'accessories';
 
   return {
     id: String(row.id),
     name: String(row.title || 'Untitled product'),
     slug: String(row.slug),
-    category: safeCategory,
+    category,
     leatherType: String(row.leather_type || 'Full-Grain Leather'),
     basePrice: Number(row.base_price_usd || 0),
     description: String(row.description || ''),

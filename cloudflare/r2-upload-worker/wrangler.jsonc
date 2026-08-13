@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "praba-r2-upload",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-13",
+  "r2_buckets": [
+    {
+      "binding": "R2_BUCKET",
+      "bucket_name": "praba-leather-asset"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "UPLOAD_RATE_LIMITER",
+      "namespace_id": "731904",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    }
+  ],
+  "vars": {
+    "R2_PUBLIC_BASE_URL": "https://assetpraba.prvtech.site",
+    "ALLOWED_ORIGINS": "https://prabaleatherbali.com,https://www.prabaleatherbali.com,http://localhost:3000"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

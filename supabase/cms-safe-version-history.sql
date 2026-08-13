@@ -1,5 +1,5 @@
 -- Praba Leather Bali — CMS safe-version history (multi-snapshot).
--- Additive and idempotent. Run after cms-content.sql, admin.sql, cms-safe-version.sql.
+-- Additive and idempotent. Run after cms-content.sql and admin.sql.
 --
 -- Replaces the single-snapshot model: every "save safe version" inserts a new
 -- labelled row, so admins keep a history and can restore any past version.
@@ -30,11 +30,24 @@ create policy "Admins manage site content snapshots"
 grant select, insert, update, delete on public.site_content_snapshots to authenticated;
 revoke all on public.site_content_snapshots from anon;
 
--- Best-effort import of any single snapshot created under the older model.
-insert into public.site_content_snapshots(locale, content, label, created_at)
-select locale, content, 'Imported safe version', updated_at
-from public.site_content_safe_versions
-on conflict do nothing;
+-- Best-effort import when upgrading from the older single-snapshot model.
+do $$
+begin
+  if to_regclass('public.site_content_safe_versions') is not null then
+    execute $migration$
+      insert into public.site_content_snapshots(locale, content, label, created_at)
+      select legacy.locale, legacy.content, 'Imported safe version', legacy.updated_at
+      from public.site_content_safe_versions legacy
+      where not exists (
+        select 1 from public.site_content_snapshots snapshot
+        where snapshot.locale = legacy.locale
+          and snapshot.content = legacy.content
+          and snapshot.created_at = legacy.updated_at
+      )
+    $migration$;
+  end if;
+end;
+$$;
 
 -- Restore one snapshot by id into the live site_content (all 6 sections for its
 -- locale). Admin-only.
@@ -70,3 +83,8 @@ $$;
 
 revoke all on function public.restore_site_content_snapshot(uuid) from public, anon;
 grant execute on function public.restore_site_content_snapshot(uuid) to authenticated;
+
+-- The multi-snapshot model is now the only supported model.
+drop function if exists public.restore_site_content_safe_version(varchar);
+drop function if exists public.restore_site_content_safe_version(text);
+drop table if exists public.site_content_safe_versions;

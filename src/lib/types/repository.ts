@@ -22,7 +22,7 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
-  category: 'boots' | 'bags' | 'wallets' | 'accessories' | 'jackets';
+  category: string;
   leatherType: string;
   basePrice: number;
   description: string;

@@ -11,10 +11,9 @@ import StorefrontGate from '@/components/StorefrontGate';
 import LazyCartDrawer from '@/components/LazyCartDrawer';
 import { buildMetadata, getLiveSeo } from '@/lib/seo/metadata';
 
-// Hostinger runs the Node server behind a CDN. Render documents per request
-// so a new deployment cannot reuse HTML with old chunk hashes.
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+// Public storefront data may be shared between visitors. Revalidate often
+// enough for CMS edits while allowing Next.js and the CDN to serve ISR HTML.
+export const revalidate = 60;
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;

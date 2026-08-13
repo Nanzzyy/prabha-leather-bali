@@ -9,19 +9,7 @@ import Icon from './Icon';
 
 export default function HeroCarousel({ initialSlides }: { initialSlides?: LiveHero[] | null }) {
   const [active, setActive] = useState(0);
-  const [slides, setSlides] = useState<LiveHero[]>(initialSlides?.length ? initialSlides : [{ image_url: fallbackHeroImage, alt_text: 'Editorial view of handcrafted leather', caption: '' }]);
-
-  // Revalidate managed hero images after hydration in case the CMS changed
-  // between the server render and the browser becoming interactive.
-  useEffect(() => {
-    let cancelled = false;
-    const load = () => import('@/lib/catalog/live')
-      .then(({ fetchLiveHeroes }) => fetchLiveHeroes())
-      .then((heroes) => { if (!cancelled && heroes?.length) setSlides(heroes); })
-      .catch(() => {});
-    const timer = window.setTimeout(load, 1600);
-    return () => { cancelled = true; window.clearTimeout(timer); };
-  }, []);
+  const slides: LiveHero[] = initialSlides?.length ? initialSlides : [{ image_url: fallbackHeroImage, alt_text: 'Editorial view of handcrafted leather', caption: '' }];
 
   useEffect(() => {
     if (slides.length < 2) return;

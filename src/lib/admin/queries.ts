@@ -184,43 +184,26 @@ export async function saveProduct(input: ProductInput): Promise<string> {
     category_id: input.category_id,
   };
 
-  let id: string;
-  if (input.id) {
-    id = input.id;
-    const { error } = await sb.from('products').update(row).eq('id', id);
-    if (error) throw error;
-  } else {
-    const { data, error } = await sb.from('products').insert(row).select('id').single();
-    if (error) throw error;
-    id = data!.id;
-  }
-
-  // Replace variants and images wholesale. Image files in Storage are only
-  // removed when the user explicitly deletes one in the UI (deleteImage), so
-  // re-inserting rows here does not orphan or delete stored files.
-  const { error: deleteVariantsError } = await sb.from('product_variants').delete().eq('product_id', id);
-  if (deleteVariantsError) throw deleteVariantsError;
-  if (input.variants.length) {
-    const variants = input.variants.map((v) => ({
-      product_id: id, sku: v.sku.trim(), color_name: v.color_name.trim() || 'Default',
-      color_hex: v.color_hex || null, size_eu: v.size_eu || null, description: v.description?.trim() || null, image_url: v.image_url || null, stock_status: v.stock_status,
-    }));
-    const { error } = await sb.from('product_variants').insert(variants);
-    if (error) throw error;
-  }
-
-  const { error: deleteImagesError } = await sb.from('product_images').delete().eq('product_id', id);
-  if (deleteImagesError) throw deleteImagesError;
-  if (input.images.length) {
-    const images = input.images.map((img, idx) => ({
-      product_id: id, image_url: img.image_url, is_primary: idx === 0 ? true : !!img.is_primary,
-      display_order: idx,
-    }));
-    const { error } = await sb.from('product_images').insert(images);
-    if (error) throw error;
-  }
-
-  return id;
+  const variants = input.variants.map((v) => ({
+    sku: v.sku.trim(), color_name: v.color_name.trim() || 'Default',
+    color_hex: v.color_hex || null, size_eu: v.size_eu || null,
+    description: v.description?.trim() || null, image_url: v.image_url || null,
+    stock_status: v.stock_status,
+  }));
+  const images = input.images.map((img, idx) => ({
+    image_url: img.image_url,
+    is_primary: idx === 0 ? true : !!img.is_primary,
+    display_order: idx,
+  }));
+  const { data, error } = await sb.rpc('save_product_atomic', {
+    p_product_id: input.id ?? null,
+    p_product: row,
+    p_variants: variants,
+    p_images: images,
+  });
+  if (error) throw error;
+  if (typeof data !== 'string') throw new Error('Product save completed without returning an id.');
+  return data;
 }
 
 export async function deleteProduct(id: string): Promise<void> {
@@ -307,33 +290,6 @@ export async function syncGlobalBrand(brand: SiteContent['global']['brand']): Pr
   });
   const { error: saveError } = await sb.from('site_content').upsert(rows, { onConflict: 'locale,section' });
   if (saveError) throw saveError;
-}
-
-export interface AdminContentSafeVersion { locale: 'en' | 'id'; content: SiteContent; updated_at: string; }
-
-export async function getContentSafeVersion(locale: 'en' | 'id'): Promise<AdminContentSafeVersion | null> {
-  const sb = requireClient();
-  const { data, error } = await sb
-    .from('site_content_safe_versions')
-    .select('locale, content, updated_at')
-    .eq('locale', locale)
-    .maybeSingle();
-  if (error) throw error;
-  return data as AdminContentSafeVersion | null;
-}
-
-export async function saveContentSafeVersion(locale: 'en' | 'id', content: SiteContent): Promise<void> {
-  const sb = requireClient();
-  const { error } = await sb
-    .from('site_content_safe_versions')
-    .upsert({ locale, content, updated_at: new Date().toISOString() }, { onConflict: 'locale' });
-  if (error) throw error;
-}
-
-export async function restoreContentSafeVersion(locale: 'en' | 'id'): Promise<void> {
-  const sb = requireClient();
-  const { error } = await sb.rpc('restore_site_content_safe_version', { p_locale: locale });
-  if (error) throw error;
 }
 
 // --- Safe-version history (multi-snapshot) --------------------------------

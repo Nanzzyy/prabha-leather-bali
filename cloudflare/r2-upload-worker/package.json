@@ -1,0 +1,13 @@
+{
+  "name": "praba-r2-upload-worker",
+  "private": true,
+  "scripts": {
+    "types": "wrangler types worker-configuration.d.ts",
+    "check:types": "wrangler types --check worker-configuration.d.ts",
+    "deploy": "wrangler deploy",
+    "deploy:dry-run": "wrangler deploy --dry-run"
+  },
+  "devDependencies": {
+    "wrangler": "4.122.0"
+  }
+}

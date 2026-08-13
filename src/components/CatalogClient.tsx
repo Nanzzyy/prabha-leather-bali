@@ -5,7 +5,6 @@ import { Product } from '@/lib/types/repository';
 import ProductCard from './ProductCard';
 import Icon from './Icon';
 import Select from './Select';
-import { fetchLiveProducts } from '@/lib/catalog/live';
 import { fetchLiveCollectionProductGroups, type CollectionProductGroup } from '@/lib/collection/live';
 import { buildSubcategoryAssignments, matchesSubcategory, subcategoriesFor } from '@/lib/catalog/subcategories';
 import { useSiteContent } from '@/lib/content/SiteContentContext';
@@ -13,31 +12,15 @@ import { useServiceStatus } from '@/lib/service/ServiceStatusContext';
 
 interface Props { products: Product[]; }
 
-const categories = ['all', 'boots', 'bags', 'wallets', 'accessories', 'jackets'];
 const viewOptions = [2, 3, 4, 5];
-const colors = [
-  { name: 'Saddle Tan', hex: '#8B4513' },
-  { name: 'Deep Onyx', hex: '#181311' },
-  { name: 'Dark Brown', hex: '#5C4033' },
-  { name: 'Light Tan', hex: '#D2B48C' },
-];
 
-export default function CatalogClient({ products: initialProducts }: Props) {
-  // Live-read: replace the build-time list with the current DB state on mount so
-  // CMS edits appear without a rebuild. Falls back to build-time prop on any failure.
-  const [live, setLive] = useState<Product[] | null>(null);
+export default function CatalogClient({ products }: Props) {
   const [liveGroups, setLiveGroups] = useState<CollectionProductGroup[] | null>(null);
   const { reportDataError } = useServiceStatus();
   useEffect(() => {
-    fetchLiveProducts()
-      .then((data) => {
-        if (data === null && initialProducts.length === 0) reportDataError();
-        if (data) setLive(data);
-      })
-      .catch(() => { if (initialProducts.length === 0) reportDataError(); });
-    fetchLiveCollectionProductGroups().then(setLiveGroups).catch(() => {});
+    if (products.length === 0) reportDataError();
+    fetchLiveCollectionProductGroups(products).then(setLiveGroups).catch(() => {});
   }, []);  // eslint-disable-line react-hooks/exhaustive-deps
-  const products = live ?? initialProducts;
   const [leather, setLeather] = useState('all');
   const [color, setColor] = useState('all');
   const [price, setPrice] = useState(500);
@@ -48,6 +31,12 @@ export default function CatalogClient({ products: initialProducts }: Props) {
   const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>({});
   const { content } = useSiteContent();
   const { ui, categories: categoryLabels } = content.catalog;
+  const categories = useMemo(() => ['all', ...Array.from(new Set(products.map((product) => product.category).filter(Boolean)))], [products]);
+  const colors = useMemo(() => Array.from(new Map(
+    products.flatMap((product) => product.variants)
+      .filter((variant) => variant.color)
+      .map((variant) => [variant.color, { name: variant.color, hex: variant.colorHex || '#8B4513' }]),
+  ).values()), [products]);
   const urlQuery = useSyncExternalStore(
     (onStoreChange) => {
       window.addEventListener('popstate', onStoreChange);
@@ -113,7 +102,7 @@ export default function CatalogClient({ products: initialProducts }: Props) {
   const categoryGroups = useMemo(() => {
     const groupCategories = activeCategory === 'all' ? categories.filter((item) => item !== 'all') : [activeCategory];
     return groupCategories.map((slug) => ({ slug, title: categoryLabels[slug] || slug, products: filteredProducts.filter((product) => product.category === slug) })).filter((group) => group.products.length > 0);
-  }, [activeCategory, categoryLabels, filteredProducts]);
+  }, [activeCategory, categories, categoryLabels, filteredProducts]);
 
   const getVisibleCount = (group: string) => Math.max(visibleCounts[group] ?? 0, gridColumns * gridColumns);
   const loadMore = (group: string) => setVisibleCounts((counts) => ({ ...counts, [group]: getVisibleCount(group) + 4 }));

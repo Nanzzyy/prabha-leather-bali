@@ -9,7 +9,6 @@ import { fetchSupabaseRows } from '@/lib/supabase-rest';
 const SELECT = 'id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, description, image_url, stock_status)';
 const LOOK_PRODUCT_SELECT = 'id, title, slug, base_price_usd, categories!products_category_id_fkey(slug), product_images(image_url, display_order)';
 
-const KNOWN: Product['category'][] = ['boots', 'bags', 'wallets', 'accessories', 'jackets'];
 // Development reloads and HMR can remount storefront readers frequently.
 // Keep the live REST payload cached longer there so development does not create
 // an avoidable Supabase egress stream. Admin saves still use explicit refreshes.
@@ -88,7 +87,7 @@ export function mapLiveProductRow(row: LiveProductRow): Product {
     id: row.id,
     name: row.title,
     slug: row.slug,
-    category: (slug && (KNOWN as string[]).includes(slug)) ? (slug as Product['category']) : 'accessories',
+    category: slug || 'accessories',
     leatherType: row.leather_type || 'Full-Grain Leather',
     basePrice: Number(row.base_price_usd ?? 0),
     description: row.description || '',

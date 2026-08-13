@@ -6,7 +6,7 @@ import { useCartStore } from '@/lib/store/cartStore';
 import { useCurrency } from '@/lib/currency/CurrencyContext';
 import { useLang } from '@/lib/i18n/LangContext';
 import { flyToPouch } from '@/lib/utils/flyToCart';
-import { fetchLiveLooks, type LiveLook } from '@/lib/catalog/live';
+import type { LiveLook } from '@/lib/catalog/live';
 import { getSupabaseImageUrl } from '@/lib/images/supabase-image';
 import type { Product } from '@/lib/types/repository';
 import Icon from './Icon';
@@ -18,12 +18,10 @@ export default function Lookbook({ initialLooks }: { initialLooks?: LiveLook[] |
   const { formatPrice } = useCurrency();
   const { t } = useLang();
   const { content } = useSiteContent();
-  const [liveLooks, setLiveLooks] = useState<LiveLook[] | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => { fetchLiveLooks().then((l) => { if (l && l.length) setLiveLooks(l); }).catch(() => {}); }, []);
-  const looksData = liveLooks ?? initialLooks ?? [];
+  const looksData = initialLooks ?? [];
 
   useEffect(() => {
     if (!open) return;
