@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { getDefaultContent, mergeSiteContent, type ContentSection, type SiteContent } from './defaults';
 import type { Lang } from '@/lib/i18n/dictionaries';
-import { fetchSupabaseRows } from '@/lib/supabase-rest';
+import { fetchLiveSiteContent } from './live';
 
 type SiteContentContextValue = { content: SiteContent; loading: boolean; unavailable: boolean };
 const SiteContentContext = createContext<SiteContentContextValue | null>(null);
@@ -13,17 +13,6 @@ const CONTENT_TTL = process.env.NODE_ENV === 'development' ? 300_000 : 60_000;
 // page for seconds. Content normally arrives in <1s; after this we reveal the
 // bundled defaults with a degraded banner.
 const CONTENT_FETCH_CAP = 2000;
-
-export async function fetchLiveSiteContent(lang: Lang): Promise<Partial<Record<ContentSection, object>> | null> {
-  const rows = await fetchSupabaseRows<{ section: string; content: object }>('site_content', {
-    select: 'section,content',
-    locale: `eq.${lang}`,
-  });
-  return rows.reduce<Partial<Record<ContentSection, object>>>((result, row) => {
-    result[row.section as ContentSection] = row.content as object;
-    return result;
-  }, {});
-}
 
 function mergeLive(fallback: SiteContent, live: Partial<Record<ContentSection, object>> | null): SiteContent {
   let next = fallback;
@@ -43,22 +32,24 @@ function readStoredContent(lang: Lang): { value: SiteContent; at: number } | nul
   } catch { return null; }
 }
 
-export function SiteContentProvider({ lang, children }: { lang: Lang; children: React.ReactNode }) {
+export function SiteContentProvider({ lang, initialContent, children }: { lang: Lang; initialContent?: Partial<Record<ContentSection, object>> | null; children: React.ReactNode }) {
   // SSR-safe initial state (bundled defaults + loading=true) matches between
   // server and first client render, so no hydration mismatch. The loader masks
   // the fallback until real content is ready — that prevents the "old text then
   // swap" flash. sessionStorage hydrates the real copy in the effect so repeat
   // loads lift the loader almost instantly.
   const fallback = useMemo(() => getDefaultContent(lang), [lang]);
-  const [content, setContent] = useState<SiteContent>(fallback);
-  const [loading, setLoading] = useState(true);
+  const hasInitialContent = initialContent !== undefined && initialContent !== null;
+  const initialValue = useMemo(() => mergeLive(fallback, initialContent ?? null), [fallback, initialContent]);
+  const [content, setContent] = useState<SiteContent>(initialValue);
+  const [loading, setLoading] = useState(!hasInitialContent);
   const [unavailable, setUnavailable] = useState(false);
 
   /* eslint-disable react-hooks/set-state-in-effect -- hydrating from / syncing with the sessionStorage + Supabase external stores */
   useEffect(() => {
     let mounted = true;
 
-    const stored = readStoredContent(lang);
+    const stored = hasInitialContent ? null : readStoredContent(lang);
     if (stored) {
       setContent(stored.value);
       if (Date.now() - stored.at < CONTENT_TTL) {
@@ -67,7 +58,7 @@ export function SiteContentProvider({ lang, children }: { lang: Lang; children: 
       }
     }
 
-    const cap = window.setTimeout(() => {
+    const cap = hasInitialContent ? null : window.setTimeout(() => {
       if (!mounted) return;
       setUnavailable(true);
       setLoading(false);
@@ -75,16 +66,22 @@ export function SiteContentProvider({ lang, children }: { lang: Lang; children: 
 
     fetchLiveSiteContent(lang).then((live) => {
       if (!mounted) return;
-      window.clearTimeout(cap);
+      if (cap) window.clearTimeout(cap);
       const next = mergeLive(fallback, live);
       setContent(next);
       setUnavailable(false);
       setLoading(false);
       try { window.sessionStorage.setItem(`praba:content:${lang}`, JSON.stringify({ value: next, at: Date.now() })); } catch { /* quota */ }
-    }).catch(() => { if (mounted) { window.clearTimeout(cap); setUnavailable(true); setLoading(false); } });
+    }).catch(() => {
+      if (mounted && !hasInitialContent) {
+        if (cap) window.clearTimeout(cap);
+        setUnavailable(true);
+        setLoading(false);
+      }
+    });
 
-    return () => { mounted = false; window.clearTimeout(cap); };
-  }, [fallback, lang]);
+    return () => { mounted = false; if (cap) window.clearTimeout(cap); };
+  }, [fallback, hasInitialContent, lang]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   return <SiteContentContext.Provider value={{ content, loading, unavailable }}>{children}</SiteContentContext.Provider>;
