@@ -40,6 +40,8 @@ export interface AdminProduct {
   title: string;
   slug: string;
   description: string;
+  meta_title: string | null;
+  meta_description: string | null;
   leather_type: string;
   material_title: string | null;
   material_body: string | null;
@@ -61,6 +63,8 @@ export interface ProductInput {
   title: string;
   slug: string;
   description: string;
+  meta_title: string | null;
+  meta_description: string | null;
   leather_type: string;
   material_title: string | null;
   material_body: string | null;
@@ -80,6 +84,8 @@ type AdminProductRow = {
   title: string;
   slug: string;
   description?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
   leather_type?: string | null;
   material_title?: string | null;
   material_body?: string | null;
@@ -107,6 +113,8 @@ function mapProduct(row: AdminProductRow): AdminProduct {
     title: row.title,
     slug: row.slug,
     description: row.description ?? '',
+    meta_title: row.meta_title ?? null,
+    meta_description: row.meta_description ?? null,
     leather_type: row.leather_type ?? 'Full-Grain Cowhide',
     material_title: row.material_title ?? null,
     material_body: row.material_body ?? null,
@@ -130,7 +138,7 @@ function mapProduct(row: AdminProductRow): AdminProduct {
 }
 
 const PRODUCT_SELECT = `
-  id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, created_at,
+  id, title, slug, description, meta_title, meta_description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, created_at,
   categories!products_category_id_fkey ( id, name, slug ),
   product_images ( id, image_url, is_primary, display_order ),
   product_variants ( id, sku, color_name, color_hex, size_eu, description, image_url, stock_status )
@@ -172,6 +180,8 @@ export async function saveProduct(input: ProductInput): Promise<string> {
     title: input.title.trim(),
     slug: input.slug.trim(),
     description: input.description.trim(),
+    meta_title: input.meta_title?.trim() || null,
+    meta_description: input.meta_description?.trim() || null,
     leather_type: input.leather_type.trim() || 'Full-Grain Cowhide',
     material_title: input.material_title?.trim() || null,
     material_body: input.material_body?.trim() || null,

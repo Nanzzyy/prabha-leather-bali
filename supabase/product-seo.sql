@@ -1,90 +1,16 @@
--- Praba Leather Bali — admin CMS layer.
--- Additive & idempotent. Run AFTER schema.sql + storage.sql in the Supabase SQL Editor.
---
--- Goal: let a signed-in ADMIN write catalog rows from the browser using only the
--- anon key, while everyone else (anon + non-admin authenticated) stays read-only.
--- service_role is NEVER used by the browser — it lives only in local scripts.
--- This is what guarantees "no data leakage": writes are gated by RLS, not by a
--- secret shipped to the client.
+-- Praba Leather Bali — per-product SEO metadata.
+-- Additive and idempotent. Run after schema.sql and admin.sql.
+-- NULL keeps the product SEO fallback: product title and description.
 
--- 1. profiles: one row per auth user, carrying the role.
-create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  email text,
-  role text not null default 'editor' check (role in ('admin', 'editor')),
-  created_at timestamptz not null default now()
-);
+alter table public.products add column if not exists meta_title varchar(255);
+alter table public.products add column if not exists meta_description text;
 
-alter table public.profiles enable row level security;
+comment on column public.products.meta_title is
+  'Optional product page title rendered in the HTML metadata; NULL falls back to products.title.';
+comment on column public.products.meta_description is
+  'Optional product page description rendered in the HTML metadata; NULL falls back to products.description.';
 
-revoke all on public.profiles from anon;
-grant select on public.profiles to authenticated;
-
-drop policy if exists "Users read own profile" on public.profiles;
-create policy "Users read own profile" on public.profiles
-  for select to authenticated
-  using ((select auth.uid()) = id);
-
--- 2. Profiles are provisioned explicitly by scripts/create-admin.mjs. Public
--- Auth sign-ups, if accidentally enabled, must not create a CMS role row.
-drop trigger if exists on_auth_user_created on auth.users;
-drop function if exists public.handle_new_user();
-
--- 3. is_admin(): true when the current session's user has role = 'admin'.
-create or replace function public.is_admin()
-returns boolean
-language sql
-stable
-security invoker
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.profiles
-    where id = (select auth.uid())
-      and role = 'admin'
-  );
-$$;
-
-revoke all on function public.is_admin() from public, anon;
-grant execute on function public.is_admin() to authenticated;
-
--- 4. Restore writes to authenticated. schema.sql revoked these; now safe because
---    every write row is gated to admin by the policies below.
-revoke insert, update, delete on public.categories, public.products, public.product_images, public.product_variants from anon;
-grant insert, update, delete on public.categories, public.products, public.product_images, public.product_variants to authenticated;
-
--- 5. Admin-gated write policies. (Public SELECT policies from schema.sql remain in
---    effect, so reads stay open to anon + authenticated — catalog is public content.)
-drop policy if exists "Admins manage categories" on public.categories;
-create policy "Admins manage categories" on public.categories
-  for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "Admins manage products" on public.products;
-create policy "Admins manage products" on public.products
-  for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "Admins manage product images" on public.product_images;
-create policy "Admins manage product images" on public.product_images
-  for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
-
-drop policy if exists "Admins manage product variants" on public.product_variants;
-create policy "Admins manage product variants" on public.product_variants
-  for all to authenticated
-  using (public.is_admin()) with check (public.is_admin());
-
--- 6. Storage: admins can upload/replace/delete product images. Public read stays.
-drop policy if exists "Admins manage product-image objects" on storage.objects;
-create policy "Admins manage product-image objects" on storage.objects
-  for all to authenticated
-  using (bucket_id = 'product-images' and public.is_admin())
-  with check (bucket_id = 'product-images' and public.is_admin());
-
--- 7. Save a product and replace its variants/images as one transaction. The
--- function is SECURITY INVOKER, so every statement remains subject to RLS.
+-- Keep the existing admin save path atomic while accepting the two new fields.
 create or replace function public.save_product_atomic(
   p_product_id uuid,
   p_product jsonb,

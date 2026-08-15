@@ -16,6 +16,8 @@ create table if not exists public.products (
   title varchar(255) not null,
   slug varchar(255) unique not null,
   description text,
+  meta_title varchar(255),
+  meta_description text,
   leather_type varchar(100) not null default 'Full-Grain Cowhide',
   material_title text,
   material_body text,
@@ -35,6 +37,8 @@ alter table public.products add column if not exists care_title text;
 alter table public.products add column if not exists care_body text;
 alter table public.products add column if not exists shipping_title text;
 alter table public.products add column if not exists shipping_body text;
+alter table public.products add column if not exists meta_title varchar(255);
+alter table public.products add column if not exists meta_description text;
 
 create table if not exists public.product_images (
   id uuid primary key default gen_random_uuid(),

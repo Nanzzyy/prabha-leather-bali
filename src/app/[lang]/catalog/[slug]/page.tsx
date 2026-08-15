@@ -13,7 +13,19 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { lang, slug } = await params;
-  return getPageMetadata(lang, 'product', `/catalog/${slug}/`);
+  const metadata = await getPageMetadata(lang, 'product', `/catalog/${slug}/`);
+  const product = await getCatalogProductBySlug(slug);
+  if (!product) return metadata;
+
+  const title = product.metaTitle?.trim() || product.name;
+  const description = product.metaDescription?.trim() || product.description || metadata.description;
+  return {
+    ...metadata,
+    title,
+    description,
+    openGraph: { ...metadata.openGraph, title, description },
+    twitter: { ...metadata.twitter, title, description },
+  };
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {

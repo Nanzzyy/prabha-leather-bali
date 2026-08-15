@@ -6,7 +6,7 @@ import { fetchSupabaseRows } from '@/lib/supabase-rest';
 // mapping in src/lib/repositories/index.ts so the storefront shape stays identical.
 // Returns null on any failure so callers fall back to the build-time prop.
 
-const SELECT = 'id, title, slug, description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, description, image_url, stock_status)';
+const SELECT = 'id, title, slug, description, meta_title, meta_description, leather_type, material_title, material_body, care_title, care_body, shipping_title, shipping_body, base_price_usd, is_featured, categories!products_category_id_fkey(slug), product_images(image_url, display_order), product_variants(sku, color_name, color_hex, size_eu, description, image_url, stock_status)';
 const LOOK_PRODUCT_SELECT = 'id, title, slug, base_price_usd, categories!products_category_id_fkey(slug), product_images(image_url, display_order)';
 
 // Development reloads and HMR can remount storefront readers frequently.
@@ -22,6 +22,8 @@ type LiveProductRow = {
   title: string;
   slug: string;
   description?: string | null;
+  meta_title?: string | null;
+  meta_description?: string | null;
   leather_type?: string | null;
   material_title?: string | null;
   material_body?: string | null;
@@ -91,6 +93,8 @@ export function mapLiveProductRow(row: LiveProductRow): Product {
     leatherType: row.leather_type || 'Full-Grain Leather',
     basePrice: Number(row.base_price_usd ?? 0),
     description: row.description || '',
+    metaTitle: row.meta_title?.trim() || null,
+    metaDescription: row.meta_description?.trim() || null,
     specifications: {
       materialTitle: row.material_title || undefined,
       materialBody: row.material_body || undefined,

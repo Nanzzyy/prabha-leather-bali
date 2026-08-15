@@ -265,8 +265,8 @@ function SeoEditor({ value, onChange, onError }: { value: SiteSeo; onChange: (va
     <EditorCard title="SEO defaults" description="These values are rendered in the initial HTML head for search engines and social sharing. Keep titles concise and descriptions specific to Praba Leather Bali.">
       <FieldGrid fields={[
         <TextField key="siteName" label="Site name" value={value.siteName} onChange={(next) => set('siteName', next)} />,
-        <TextField key="siteTitle" label="Default title" value={value.siteTitle} onChange={(next) => set('siteTitle', next)} hint="Recommended: 50–60 characters." />,
-        <TextField key="siteDescription" label="Default meta description" value={value.siteDescription} onChange={(next) => set('siteDescription', next)} multiline hint="Recommended: 140–160 characters." />,
+        <TextField key="siteTitle" label="Meta title" value={value.siteTitle} onChange={(next) => set('siteTitle', next)} hint="Default site title · Recommended: 50–60 characters." />,
+        <TextField key="siteDescription" label="Meta description" value={value.siteDescription} onChange={(next) => set('siteDescription', next)} multiline hint="Default site description · Recommended: 140–160 characters." />,
         <TextField key="keywords" label="Keywords" value={value.keywords} onChange={(next) => set('keywords', next)} hint="Separate phrases with commas." />,
         <TextField key="canonicalUrl" label="Canonical site URL" value={value.canonicalUrl} onChange={(next) => set('canonicalUrl', next)} hint="Use the public HTTPS domain without a trailing slash." />,
         <TextField key="robots" label="Robots directive" value={value.robots} onChange={(next) => set('robots', next)} hint="Example: index,follow or noindex,nofollow." />,
@@ -289,8 +289,8 @@ function SeoEditor({ value, onChange, onError }: { value: SiteSeo; onChange: (va
       <div className="admin-seo-pages">{SEO_PAGE_KEYS.map(({ key, label }) => <div className="admin-seo-page" key={key}>
         <h4>{label}</h4>
         <FieldGrid fields={[
-          <TextField key="title" label="Page title" value={value.pages[key].title} onChange={(next) => set('pages', { ...value.pages, [key]: { ...value.pages[key], title: next } })} />,
-          <TextField key="description" label="Page description" value={value.pages[key].description} onChange={(next) => set('pages', { ...value.pages, [key]: { ...value.pages[key], description: next } })} multiline />,
+          <TextField key="title" label="Meta title" value={value.pages[key].title} onChange={(next) => set('pages', { ...value.pages, [key]: { ...value.pages[key], title: next } })} />,
+          <TextField key="description" label="Meta description" value={value.pages[key].description} onChange={(next) => set('pages', { ...value.pages, [key]: { ...value.pages[key], description: next } })} multiline />,
         ]} />
       </div>)}</div>
     </EditorCard>

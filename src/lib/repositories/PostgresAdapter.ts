@@ -23,7 +23,7 @@ export class PostgresAdapter implements IProductRepository {
     try {
       client = await pool.connect();
       const result = await client.query(`
-        SELECT p.id, p.title, p.slug, p.description, p.leather_type,
+        SELECT p.id, p.title, p.slug, p.description, p.meta_title, p.meta_description, p.leather_type,
           p.material_title, p.material_body, p.care_title, p.care_body,
           p.shipping_title, p.shipping_body, p.base_price_usd,
           p.is_featured, c.slug AS category,
@@ -58,7 +58,7 @@ export class PostgresAdapter implements IProductRepository {
     try {
       client = await pool.connect();
       const result = await client.query(`
-        SELECT p.id, p.title, p.slug, p.description, p.leather_type,
+        SELECT p.id, p.title, p.slug, p.description, p.meta_title, p.meta_description, p.leather_type,
           p.material_title, p.material_body, p.care_title, p.care_body,
           p.shipping_title, p.shipping_body, p.base_price_usd,
           p.is_featured, c.slug AS category,
@@ -117,6 +117,8 @@ function mapProductRow(row: Record<string, unknown>): Product {
     leatherType: String(row.leather_type || 'Full-Grain Leather'),
     basePrice: Number(row.base_price_usd || 0),
     description: String(row.description || ''),
+    metaTitle: row.meta_title ? String(row.meta_title) : null,
+    metaDescription: row.meta_description ? String(row.meta_description) : null,
     specifications: {
       materialTitle: row.material_title ? String(row.material_title) : undefined,
       materialBody: row.material_body ? String(row.material_body) : undefined,

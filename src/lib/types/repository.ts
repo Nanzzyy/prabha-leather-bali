@@ -26,6 +26,8 @@ export interface Product {
   leatherType: string;
   basePrice: number;
   description: string;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
   specifications?: ProductSpecifications;
   images: string[];
   variants: ProductVariant[];

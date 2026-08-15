@@ -30,7 +30,7 @@ const specificationDraftsFromProduct = (product: AdminProduct): SpecificationDra
   shipping: { useDefault: !(product.shipping_title?.trim() || product.shipping_body?.trim()), title: product.shipping_title ?? '', body: product.shipping_body ?? '' },
 });
 
-const serializeProductForm = (input: { title: string; slug: string; description: string; leatherType: string; price: string; categoryId: string; featured: boolean; specifications: SpecificationDrafts; variants: AdminVariant[]; images: AdminImage[] }) => JSON.stringify(input);
+const serializeProductForm = (input: { title: string; slug: string; description: string; metaTitle: string; metaDescription: string; leatherType: string; price: string; categoryId: string; featured: boolean; specifications: SpecificationDrafts; variants: AdminVariant[]; images: AdminImage[] }) => JSON.stringify(input);
 
 export default function ProductForm({ productId }: { productId?: string }) {
   const router = useRouter();
@@ -53,7 +53,9 @@ export default function ProductForm({ productId }: { productId?: string }) {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const [initialSnapshot, setInitialSnapshot] = useState<string | null>(() => productId ? null : serializeProductForm({ title: '', slug: '', description: '', leatherType: 'Full-Grain Cowhide', price: '', categoryId: '', featured: false, specifications: emptySpecificationDrafts(), variants: [emptyVariant()], images: [] }));
+  const [metaTitle, setMetaTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [initialSnapshot, setInitialSnapshot] = useState<string | null>(() => productId ? null : serializeProductForm({ title: '', slug: '', description: '', metaTitle: '', metaDescription: '', leatherType: 'Full-Grain Cowhide', price: '', categoryId: '', featured: false, specifications: emptySpecificationDrafts(), variants: [emptyVariant()], images: [] }));
   const allowNavigationRef = useRef(false);
 
   useEffect(() => {
@@ -64,18 +66,19 @@ export default function ProductForm({ productId }: { productId?: string }) {
         if (!p) { err('Product not found.'); router.replace('/admin/products/'); return; }
         setTitle(p.title); setSlug(p.slug); setSlugTouched(true);
         setDescription(p.description); setLeatherType(p.leather_type);
+        setMetaTitle(p.meta_title ?? ''); setMetaDescription(p.meta_description ?? '');
         setPrice(String(p.base_price_usd)); setCategoryId(p.category_id ?? '');
         setFeatured(p.is_featured);
         setSpecifications(specificationDraftsFromProduct(p));
         setVariants(p.variants.length ? p.variants : [emptyVariant()]);
         setImages(p.images);
-        setInitialSnapshot(serializeProductForm({ title: p.title, slug: p.slug, description: p.description, leatherType: p.leather_type, price: String(p.base_price_usd), categoryId: p.category_id ?? '', featured: p.is_featured, specifications: specificationDraftsFromProduct(p), variants: p.variants.length ? p.variants : [emptyVariant()], images: p.images }));
+        setInitialSnapshot(serializeProductForm({ title: p.title, slug: p.slug, description: p.description, metaTitle: p.meta_title ?? '', metaDescription: p.meta_description ?? '', leatherType: p.leather_type, price: String(p.base_price_usd), categoryId: p.category_id ?? '', featured: p.is_featured, specifications: specificationDraftsFromProduct(p), variants: p.variants.length ? p.variants : [emptyVariant()], images: p.images }));
       })
       .catch((e) => err(e instanceof Error ? e.message : 'Load failed.'))
       .finally(() => setLoading(false));
   }, [productId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const currentSnapshot = useMemo(() => serializeProductForm({ title, slug, description, leatherType, price, categoryId, featured, specifications, variants, images }), [title, slug, description, leatherType, price, categoryId, featured, specifications, variants, images]);
+  const currentSnapshot = useMemo(() => serializeProductForm({ title, slug, description, metaTitle, metaDescription, leatherType, price, categoryId, featured, specifications, variants, images }), [title, slug, description, metaTitle, metaDescription, leatherType, price, categoryId, featured, specifications, variants, images]);
   const isDirty = !loading && initialSnapshot !== null && initialSnapshot !== currentSnapshot;
 
   useEffect(() => {
@@ -159,6 +162,8 @@ export default function ProductForm({ productId }: { productId?: string }) {
       await saveProduct({
         id: productId,
         title, slug, description, leather_type: leatherType,
+        meta_title: metaTitle,
+        meta_description: metaDescription,
         base_price_usd: Number(price) || 0, is_featured: featured,
         material_title: specifications.material.useDefault ? null : specifications.material.title,
         material_body: specifications.material.useDefault ? null : specifications.material.body,
@@ -194,6 +199,7 @@ export default function ProductForm({ productId }: { productId?: string }) {
 
       <nav className="admin-form-anchors" aria-label="Product form sections">
         <a href="#details">Details</a>
+        <a href="#seo">SEO</a>
         <a href="#specifications">Product panels</a>
         <a href="#variants">Variants</a>
         <a href="#images">Images</a>
@@ -234,6 +240,23 @@ export default function ProductForm({ productId }: { productId?: string }) {
             </label>
             <label className="admin-checkbox" style={{ alignSelf: 'end', paddingBottom: '0.7rem' }}>
               <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} /> Feature on homepage
+            </label>
+          </div>
+        </div>
+
+        <div id="seo" className="admin-section admin-form-section">
+          <h2>SEO metadata</h2>
+          <p className="admin-field__hint">These values become the product page’s HTML title and meta description for Google and other search engines. Leave them blank to use the product title and description automatically.</p>
+          <div className="admin-fieldrow">
+            <label className="admin-field">
+              <span className="admin-field__label">Meta title</span>
+              <input type="text" value={metaTitle} maxLength={255} onChange={(e) => setMetaTitle(e.target.value)} placeholder={title || 'Product title for search results'} />
+              <span className="admin-field__hint">{metaTitle.length}/255 characters · Recommended: 50–60.</span>
+            </label>
+            <label className="admin-field">
+              <span className="admin-field__label">Meta description</span>
+              <textarea value={metaDescription} maxLength={320} onChange={(e) => setMetaDescription(e.target.value)} placeholder={description || 'Short product summary for search results'} rows={4} />
+              <span className="admin-field__hint">{metaDescription.length}/320 characters · Recommended: 140–160.</span>
             </label>
           </div>
         </div>
