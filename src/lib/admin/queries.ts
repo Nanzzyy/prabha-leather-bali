@@ -17,6 +17,24 @@ export interface AdminCollectionProductGroup {
   display_order: number;
 }
 
+export interface AdminPromoItem {
+  id?: string;
+  product_id: string;
+  promo_price_usd: number;
+  display_order: number;
+}
+
+export interface AdminPromoCampaign {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+  items: AdminPromoItem[];
+}
+
 export interface AdminVariant {
   id?: string;
   sku: string;
@@ -259,6 +277,53 @@ export async function saveCollectionProductGroup(categoryId: string, subcategory
     p_subcategory_slug: subcategorySlug,
     p_product_ids: productIds,
   });
+  if (error) throw error;
+}
+
+// --- Promotional campaigns -----------------------------------------------
+
+export async function listPromoCampaigns(): Promise<AdminPromoCampaign[]> {
+  const sb = requireClient();
+  const { data, error } = await sb
+    .from('promo_campaigns')
+    .select('id, name, slug, description, is_active, display_order, created_at, promo_items(id, product_id, promo_price_usd, display_order)')
+    .order('display_order')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return ((data ?? []) as Array<AdminPromoCampaign & { promo_items?: AdminPromoItem[] }>).map((campaign) => ({
+    ...campaign,
+    description: campaign.description ?? '',
+    is_active: Boolean(campaign.is_active),
+    display_order: Number(campaign.display_order ?? 0),
+    items: (campaign.promo_items ?? [])
+      .sort((a, b) => Number(a.display_order ?? 0) - Number(b.display_order ?? 0))
+      .map((item) => ({ ...item, promo_price_usd: Number(item.promo_price_usd ?? 0), display_order: Number(item.display_order ?? 0) })),
+  }));
+}
+
+export async function savePromoCampaign(input: {
+  id?: string;
+  name: string;
+  slug: string;
+  description: string;
+  is_active: boolean;
+  display_order: number;
+  items: Array<{ product_id: string; promo_price_usd: number }>;
+}): Promise<string> {
+  const sb = requireClient();
+  const { data, error } = await sb.rpc('save_promo_campaign_atomic', {
+    p_campaign_id: input.id ?? null,
+    p_campaign: { name: input.name.trim(), slug: input.slug.trim(), description: input.description.trim(), is_active: input.is_active, display_order: Number(input.display_order) || 0 },
+    p_items: input.items.map((item, index) => ({ product_id: item.product_id, promo_price_usd: Number(item.promo_price_usd), display_order: index })),
+  });
+  if (error) throw error;
+  if (typeof data !== 'string') throw new Error('Promo campaign save completed without returning an id.');
+  return data;
+}
+
+export async function deletePromoCampaign(id: string): Promise<void> {
+  const sb = requireClient();
+  const { error } = await sb.from('promo_campaigns').delete().eq('id', id);
   if (error) throw error;
 }
 

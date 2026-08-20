@@ -102,6 +102,7 @@ export default function SiteHeader() {
           {navLinks.slice(0, 2).map((link) => (
             <LocaleLink key={link.key} href={link.href} ariaCurrent={isActive(link.href) ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{link.key === 'nav.home' ? navLabels.home : navLabels.catalog}</LocaleLink>
           ))}
+          <LocaleLink href="/promo/" ariaCurrent={isActive('/promo/') ? 'page' : undefined} onClick={() => setMenuOpen(false)}>{navLabels.promo || (lang === 'id' ? 'Promo' : 'Promotions')}</LocaleLink>
           <div className="site-nav__collection" onMouseEnter={openCollection} onMouseLeave={closeCollection} onFocus={openCollection} onBlur={(event) => { const nextTarget = event.relatedTarget; if (!nextTarget || !(nextTarget instanceof Node) || !event.currentTarget.contains(nextTarget)) closeCollection(); }}>
             <LocaleLink href="/collection/" ariaCurrent={isActive('/collection/') ? 'page' : undefined} aria-haspopup="true" aria-expanded={collectionOpen} onClick={() => { setMenuOpen(false); closeCollectionImmediately(); }}>{navLabels.collection} <Icon>expand_more</Icon></LocaleLink>
             {collectionOpen && <CollectionMegaMenu onNavigate={() => { setMenuOpen(false); closeCollectionImmediately(); }} />}

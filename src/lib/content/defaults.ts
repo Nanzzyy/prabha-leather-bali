@@ -30,7 +30,7 @@ type DeepPartial<T> = T extends readonly unknown[] ? T : T extends object ? { [K
 export type SiteContent = {
   global: {
     brand: ContentImage;
-    nav: { home: string; catalog: string; collection: string; contact: string; about: string };
+    nav: { home: string; catalog: string; collection: string; promo?: string; contact: string; about: string };
     header: { search: string; searchPlaceholder: string; pouch: string };
     footer: { brand: string; tagline: string; explore: string; service: string; visit: string; ourStory: string; contact: string; shipping: string; careGuide: string; locations: string; mapQuery: string; handcrafted: string; rights: string; privacy: string; privacyHref: string; terms: string; termsHref: string; cookies: string; cookiesHref: string; phone: string; phoneHref: string; email: string; whatsapp: string; instagram: string };
     seo: SiteSeo;

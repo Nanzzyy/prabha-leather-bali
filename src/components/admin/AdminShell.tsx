@@ -20,6 +20,7 @@ const NAV_GROUPS = [
     label: 'Catalog management',
     items: [
       { href: '/admin/products/', label: 'Products', icon: 'inventory_2' },
+      { href: '/admin/promos/', label: 'Promotions', icon: 'local_offer' },
       { href: '/admin/categories/', label: 'Categories', icon: 'category' },
       { href: '/admin/collection/', label: 'Collections', icon: 'account_tree' },
     ]
