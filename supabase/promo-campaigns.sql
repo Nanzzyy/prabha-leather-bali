@@ -20,6 +20,17 @@ create table if not exists public.promo_items (
   unique (campaign_id, product_id)
 );
 
+create table if not exists public.promo_settings (
+  id boolean primary key default true check (id = true),
+  is_enabled boolean not null default false,
+  nav_campaign_id uuid references public.promo_campaigns(id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+
+insert into public.promo_settings (id, is_enabled)
+values (true, false)
+on conflict (id) do nothing;
+
 create index if not exists promo_campaigns_active_order_idx
   on public.promo_campaigns(is_active, display_order, created_at desc);
 create index if not exists promo_items_campaign_order_idx
@@ -29,10 +40,11 @@ create index if not exists promo_items_product_idx
 
 alter table public.promo_campaigns enable row level security;
 alter table public.promo_items enable row level security;
+alter table public.promo_settings enable row level security;
 
-revoke all on table public.promo_campaigns, public.promo_items from anon, authenticated;
-grant select on table public.promo_campaigns, public.promo_items to anon, authenticated;
-grant insert, update, delete on table public.promo_campaigns, public.promo_items to authenticated;
+revoke all on table public.promo_campaigns, public.promo_items, public.promo_settings from anon, authenticated;
+grant select on table public.promo_campaigns, public.promo_items, public.promo_settings to anon, authenticated;
+grant insert, update, delete on table public.promo_campaigns, public.promo_items, public.promo_settings to authenticated;
 
 drop policy if exists "Public can read active promo campaigns" on public.promo_campaigns;
 create policy "Public can read active promo campaigns"
@@ -55,6 +67,16 @@ create policy "Admins manage promo campaigns"
 drop policy if exists "Admins manage promo items" on public.promo_items;
 create policy "Admins manage promo items"
   on public.promo_items for all to authenticated
+  using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "Public can read enabled promo settings" on public.promo_settings;
+create policy "Public can read enabled promo settings"
+  on public.promo_settings for select to anon, authenticated
+  using (is_enabled = true);
+
+drop policy if exists "Admins manage promo settings" on public.promo_settings;
+create policy "Admins manage promo settings"
+  on public.promo_settings for all to authenticated
   using (public.is_admin()) with check (public.is_admin());
 
 -- Save a campaign and replace its product/price assignments in one transaction.
@@ -82,6 +104,9 @@ begin
   v_slug := trim(coalesce(p_campaign ->> 'slug', ''));
   if v_name = '' or v_slug = '' then
     raise exception 'Campaign name and slug are required' using errcode = '22023';
+  end if;
+  if v_slug in ('about', 'admin', 'api', 'catalog', 'collection', 'contact', 'cookies', 'maintenance', 'privacy', 'promo', 'terms') then
+    raise exception 'Campaign slug is reserved by the storefront' using errcode = '22023';
   end if;
 
   if p_campaign_id is null then
@@ -123,3 +148,35 @@ $$;
 
 revoke all on function public.save_promo_campaign_atomic(uuid, jsonb, jsonb) from public, anon;
 grant execute on function public.save_promo_campaign_atomic(uuid, jsonb, jsonb) to authenticated;
+
+create or replace function public.save_promo_settings(
+  p_is_enabled boolean,
+  p_nav_campaign_id uuid
+)
+returns void language plpgsql set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can save promotional menu settings' using errcode = '42501';
+  end if;
+  if p_is_enabled and p_nav_campaign_id is null then
+    raise exception 'Choose an active campaign before enabling the promotional menu' using errcode = '22023';
+  end if;
+  if p_nav_campaign_id is not null and not exists (
+    select 1 from public.promo_campaigns
+    where id = p_nav_campaign_id and is_active = true
+  ) then
+    raise exception 'The selected campaign must be active' using errcode = '22023';
+  end if;
+
+  insert into public.promo_settings (id, is_enabled, nav_campaign_id, updated_at)
+  values (true, p_is_enabled, p_nav_campaign_id, now())
+  on conflict (id) do update
+    set is_enabled = excluded.is_enabled,
+        nav_campaign_id = excluded.nav_campaign_id,
+        updated_at = excluded.updated_at;
+end;
+$$;
+
+revoke all on function public.save_promo_settings(boolean, uuid) from public, anon;
+grant execute on function public.save_promo_settings(boolean, uuid) to authenticated;

@@ -35,6 +35,11 @@ export interface AdminPromoCampaign {
   items: AdminPromoItem[];
 }
 
+export interface AdminPromoSettings {
+  is_enabled: boolean;
+  nav_campaign_id: string | null;
+}
+
 export interface AdminVariant {
   id?: string;
   sku: string;
@@ -299,6 +304,22 @@ export async function listPromoCampaigns(): Promise<AdminPromoCampaign[]> {
       .sort((a, b) => Number(a.display_order ?? 0) - Number(b.display_order ?? 0))
       .map((item) => ({ ...item, promo_price_usd: Number(item.promo_price_usd ?? 0), display_order: Number(item.display_order ?? 0) })),
   }));
+}
+
+export async function getPromoSettings(): Promise<AdminPromoSettings> {
+  const sb = requireClient();
+  const { data, error } = await sb.from('promo_settings').select('is_enabled, nav_campaign_id').eq('id', true).maybeSingle();
+  if (error) throw error;
+  return { is_enabled: Boolean(data?.is_enabled), nav_campaign_id: data?.nav_campaign_id ?? null };
+}
+
+export async function savePromoSettings(isEnabled: boolean, navCampaignId: string | null): Promise<void> {
+  const sb = requireClient();
+  const { error } = await sb.rpc('save_promo_settings', {
+    p_is_enabled: isEnabled,
+    p_nav_campaign_id: navCampaignId,
+  });
+  if (error) throw error;
 }
 
 export async function savePromoCampaign(input: {

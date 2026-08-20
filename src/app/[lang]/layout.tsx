@@ -11,6 +11,7 @@ import { ServiceStatusProvider } from '@/lib/service/ServiceStatusContext';
 import StorefrontGate from '@/components/StorefrontGate';
 import LazyCartDrawer from '@/components/LazyCartDrawer';
 import { buildMetadata, getLiveSeo } from '@/lib/seo/metadata';
+import { getLivePromoNavigation } from '@/lib/promo/live';
 
 // Public storefront data may be shared between visitors. Revalidate often
 // enough for CMS edits while allowing Next.js and the CDN to serve ISR HTML.
@@ -29,14 +30,17 @@ export function generateStaticParams() {
 export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!isValidLang(lang)) notFound();
-  const initialContent = await fetchLiveSiteContent(lang).catch(() => null);
+  const [initialContent, promoNavigation] = await Promise.all([
+    fetchLiveSiteContent(lang).catch(() => null),
+    getLivePromoNavigation(),
+  ]);
   return (
     <CurrencyProvider>
       <LangProvider lang={lang}>
         <SiteContentProvider lang={lang} initialContent={initialContent}>
           <ServiceStatusProvider>
             <StorefrontGate>
-              <SiteHeader />
+              <SiteHeader promoCampaign={promoNavigation.enabled && promoNavigation.campaign ? { name: promoNavigation.campaign.name, slug: promoNavigation.campaign.slug } : null} />
               {children}
               <SiteFooter />
               <LazyCartDrawer />
