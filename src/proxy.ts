@@ -12,6 +12,10 @@ function redirectWithCookies(request: NextRequest, source: NextResponse, pathnam
 }
 
 export async function proxy(request: NextRequest) {
+  if (/^\/(?:en|id)\/promo\/?$/.test(request.nextUrl.pathname)) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   let response = NextResponse.next({ request });
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -39,5 +43,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/:lang/promo', '/:lang/promo/:path*'],
 };

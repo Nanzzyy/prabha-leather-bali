@@ -8,8 +8,8 @@ import { getPageMetadata } from '@/lib/seo/metadata';
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { lang, slug } = await params;
   const campaign = await getLivePromoCampaignBySlug(slug);
+  if (!campaign) notFound();
   const metadata = await getPageMetadata(lang, 'catalog', `/${slug}/`);
-  if (!campaign) return metadata;
   return { ...metadata, title: `${campaign.name} — Praba Leather Bali`, description: campaign.description || metadata.description };
 }
 

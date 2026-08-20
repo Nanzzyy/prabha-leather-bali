@@ -127,6 +127,13 @@ begin
     end if;
   end if;
 
+  -- A campaign that is made inactive cannot remain the public menu target.
+  if not coalesce((p_campaign ->> 'is_active')::boolean, false) then
+    update public.promo_settings
+    set is_enabled = false, nav_campaign_id = null, updated_at = now()
+    where id = true and nav_campaign_id = v_campaign_id;
+  end if;
+
   if exists (
     select 1
     from jsonb_to_recordset(coalesce(p_items, '[]'::jsonb)) as item(product_id uuid, promo_price_usd numeric, display_order integer)
@@ -162,7 +169,7 @@ begin
   if p_is_enabled and p_nav_campaign_id is null then
     raise exception 'Choose an active campaign before enabling the promotional menu' using errcode = '22023';
   end if;
-  if p_nav_campaign_id is not null and not exists (
+  if p_is_enabled and p_nav_campaign_id is not null and not exists (
     select 1 from public.promo_campaigns
     where id = p_nav_campaign_id and is_active = true
   ) then
@@ -180,3 +187,20 @@ $$;
 
 revoke all on function public.save_promo_settings(boolean, uuid) from public, anon;
 grant execute on function public.save_promo_settings(boolean, uuid) to authenticated;
+
+-- Deleting the selected campaign also disables the public menu target.
+create or replace function public.clear_deleted_promo_navigation()
+returns trigger language plpgsql set search_path = public
+as $$
+begin
+  update public.promo_settings
+  set is_enabled = false, nav_campaign_id = null, updated_at = now()
+  where id = true and nav_campaign_id = old.id;
+  return old;
+end;
+$$;
+
+drop trigger if exists clear_deleted_promo_navigation on public.promo_campaigns;
+create trigger clear_deleted_promo_navigation
+  before delete on public.promo_campaigns
+  for each row execute function public.clear_deleted_promo_navigation();
